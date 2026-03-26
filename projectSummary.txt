@@ -1,0 +1,234 @@
+================================================================================
+  CAUTION MONEY REFUND PORTAL — Frontend Project Summary
+================================================================================
+
+--------------------------------------------------------------------------------
+WHAT IS THIS APP?
+--------------------------------------------------------------------------------
+
+This is a web app for a college (IEHE) that helps students get their "caution
+money" refunded when they graduate. Caution money is a security deposit
+(₹5,000) that students pay when they join the college. This app makes the
+refund process fully digital — no paperwork, no running around departments.
+
+Without this app, a student would have to:
+  - Visit the library, sports room, hostel, and every department in person
+  - Get a physical "no dues" stamp from each
+  - Then go to accounts to get the refund
+
+With this app:
+  - Student submits one online application
+  - Each department staff logs in, reviews, and clicks "Approve"
+  - Once all departments clear, accounts can process the refund
+  - Student can track everything from their dashboard
+
+--------------------------------------------------------------------------------
+WHO USES IT?
+--------------------------------------------------------------------------------
+
+Two types of users:
+
+  1. STUDENTS
+     - Register with their enrollment number and details
+     - Submit a refund application with their bank account info
+     - Track which departments have cleared them
+     - See when their refund is processed
+
+  2. ADMIN STAFF (different roles for different departments)
+     - Library staff   → approve library clearance
+     - Sports staff    → approve sports clearance
+     - Hostel staff    → approve hostel clearance
+     - Department HOD  → approve academic department clearance
+     - Accounts staff  → process the final refund once all clearances are done
+     - Superadmin      → can do everything, see all stats
+
+--------------------------------------------------------------------------------
+HOW DOES THE APP FLOW (LOGICAL STEPS)?
+--------------------------------------------------------------------------------
+
+Step 1: Student Registers
+  → Goes to /student/login → fills registration form → account created
+
+Step 2: Student Submits Application
+  → Fills in personal details + bank account number → clicks Submit
+
+Step 3: Application Goes Through Departments
+  → Each department admin logs in and sees applications assigned to them
+  → They can either CLEAR it or put it ON HOLD (if there's an issue)
+  → There are 5 departments: Library, Sports, Hostel, Academic Dept, Accounts
+
+Step 4: Full Clearance
+  → Once all departments (except Accounts) have cleared → status becomes
+    "Fully Cleared"
+
+Step 5: Accounts Processes the Refund
+  → Accounts staff logs in, sees fully cleared applications, clicks "Process"
+  → Status becomes "Refund Processed" — student gets notified via status page
+
+Step 6: Student Sees Final Status
+  → Student logs in, visits their dashboard or status page, sees "Refunded"
+
+--------------------------------------------------------------------------------
+PAGES IN THE APP
+--------------------------------------------------------------------------------
+
+PUBLIC (anyone can see):
+  - Landing Page (/)           → intro to the portal, links to login
+
+STUDENT PAGES (only logged-in students):
+  - Student Login/Register     → sign up or sign in
+  - Student Dashboard          → see your current status + which depts cleared
+  - Student Application        → fill/edit your refund application form
+  - Student Status             → track your refund with a step timeline
+
+ADMIN PAGES (only logged-in admin staff):
+  - Admin Login                → separate login for staff
+  - Admin Dashboard            → see stats: how many apps, how many cleared etc.
+  - Admin Applications (list)  → search and filter all student applications
+  - Admin Application (detail) → view one application, take action on it
+  - Admin Clearances           → dept-specific: approve/hold clearances
+  - Admin Refunds              → accounts-only: process final refunds
+
+--------------------------------------------------------------------------------
+FOLDER STRUCTURE (SIMPLIFIED)
+--------------------------------------------------------------------------------
+
+src/
+  pages/         → all the screens/pages of the app
+    student/     → student-facing pages
+    admin/       → admin-facing pages
+
+  components/    → reusable building blocks (buttons, cards, modals, etc.)
+    common/      → things used across many pages (like a status badge)
+
+  services/      → functions that talk to the backend server (API calls)
+  hooks/         → reusable logic for fetching and managing data
+  context/       → global state shared across the whole app (e.g. who is logged in)
+  router/        → controls which page shows for which URL
+  config/        → constants like department names, status labels, amounts
+  utils/         → small helper functions (format a date, mask bank account, etc.)
+
+--------------------------------------------------------------------------------
+LIBRARIES USED AND WHY
+--------------------------------------------------------------------------------
+
+REACT (react, react-dom)
+  What: The main library for building the UI
+  Why:  React lets us break the app into small reusable pieces (components).
+        Instead of writing one giant HTML page, we write small components like
+        <StudentDashboard />, <ClearanceCard />, <KpiCard /> and compose them.
+
+REACT ROUTER DOM
+  What: Handles navigation between pages without reloading the browser
+  Why:  When a student clicks "Go to Dashboard", we don't reload the page — we
+        just swap out what's shown. This makes the app feel fast and smooth.
+        It also lets us protect pages: /admin/dashboard only works if you're
+        an admin. Otherwise it redirects you.
+
+AXIOS
+  What: Used to make HTTP requests to the backend server
+  Why:  This is how the app talks to the database. When a student submits an
+        application, axios sends that data to the server. When the page loads,
+        axios fetches the latest data. We set it up to automatically add the
+        login token to every request so the server knows who is asking.
+
+DATE-FNS
+  What: A library for formatting and working with dates
+  Why:  Dates from the server come in a raw format like "2026-03-26T10:30:00Z".
+        date-fns helps us show it nicely as "26 Mar 2026, 10:30 AM" or "2 hours
+        ago". Much easier than writing that logic ourselves.
+
+REACT HOT TOAST
+  What: Shows small popup notifications (toasts)
+  Why:  After an action like "Application submitted" or "Clearance approved",
+        the user needs quick feedback. This library shows a small toast message
+        at the top of the screen automatically.
+
+REACT ICONS
+  What: A collection of ready-to-use icons
+  Why:  Instead of downloading and managing image files for icons, this library
+        gives us hundreds of icons we can drop in as components. Used for
+        department icons, status icons, nav icons etc.
+
+VITE
+  What: The tool that builds and runs the project during development
+  Why:  Vite starts a local development server (localhost:5173) and compiles
+        the React code into regular HTML/CSS/JS that browsers understand.
+        It's much faster than older tools like Create React App.
+
+--------------------------------------------------------------------------------
+HOW LOGIN AND SECURITY WORKS
+--------------------------------------------------------------------------------
+
+When a user logs in:
+  → Server returns a "token" (a long string that proves you're logged in)
+  → The app saves this token in the browser (localStorage)
+  → Every API request automatically sends this token so the server trusts it
+  → If the token expires or is invalid, the app logs you out and sends you home
+
+The app keeps track of "who is logged in" using something called AuthContext.
+This is like a global variable that any page can read: "Is someone logged in?
+Are they a student or an admin? What's their name?"
+
+Page protection works like this:
+  → Student tries to visit /admin/dashboard
+  → RequireAdmin component checks: are you an admin? No? → redirect to login
+  → Same for admin trying to visit student pages
+
+--------------------------------------------------------------------------------
+HOW DATA IS FETCHED (HOOKS)
+--------------------------------------------------------------------------------
+
+Instead of writing data-fetching code directly inside each page, we have
+custom hooks. Think of hooks as reusable question-askers:
+
+  useMyApplication()    → "Give me the current student's application"
+  useApplicationList()  → "Give me all applications (with filters & search)"
+  useDashboardStats()   → "Give me the numbers for the admin dashboard"
+  useApplicationDetail()→ "Give me details of one specific application"
+
+A page just calls the hook:
+  const { application, loading } = useMyApplication()
+
+And the hook handles fetching, loading state, errors — all of it.
+The page just focuses on displaying the data.
+
+--------------------------------------------------------------------------------
+HOW THE BACKEND IS CONNECTED
+--------------------------------------------------------------------------------
+
+All API requests go to /api/... on the same server.
+In development, this is forwarded (proxied) to http://localhost:5000
+which is where the backend server runs.
+
+In production (deployed to Vercel), the backend URL is set as an environment
+variable and the frontend talks to it directly.
+
+All backend calls go through one Axios instance (utils/api.js) which:
+  - Sets the base URL
+  - Attaches the login token automatically
+  - Handles 401 (not authorized) errors globally
+
+--------------------------------------------------------------------------------
+DEPLOYMENT
+--------------------------------------------------------------------------------
+
+The app is deployed on Vercel (a free hosting platform for web apps).
+Because this is a "Single Page App" (SPA), all URLs like /student/dashboard
+must be redirected to index.html and React handles the routing.
+The vercel.json file sets this up.
+
+--------------------------------------------------------------------------------
+SUMMARY IN ONE PARAGRAPH
+--------------------------------------------------------------------------------
+
+This is a React web application that digitizes the caution money refund
+process for college students. Students register, submit an application, and
+track their refund status online. Admin staff from different departments log in
+with role-specific access to approve clearances. Once all departments clear a
+student, the accounts team processes the refund. The app is built with React
+for the UI, React Router for navigation, Axios for server communication,
+and a clean folder structure separating pages, services, hooks, and components.
+It's deployed on Vercel.
+
+================================================================================

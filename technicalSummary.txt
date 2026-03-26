@@ -1,0 +1,380 @@
+================================================================================
+  CAUTION MONEY REFUND PORTAL — Frontend Technical Summary
+================================================================================
+
+--------------------------------------------------------------------------------
+TECH STACK
+--------------------------------------------------------------------------------
+
+  Runtime / Build     React 18.3 + Vite 5.3
+  Language            JSX (no TypeScript)
+  Routing             React Router DOM v6
+  HTTP Client         Axios 1.7 (single configured instance)
+  State               React Context API + custom hooks (no Redux/Zustand)
+  Notifications       react-hot-toast 2.4
+  Icons               react-icons 5.2
+  Date Formatting     date-fns 3.6
+  Deployment          Vercel (SPA rewrite via vercel.json)
+  Dev Port            5173 (Vite) → proxies /api to localhost:5000
+
+--------------------------------------------------------------------------------
+PROJECT STRUCTURE
+--------------------------------------------------------------------------------
+
+  src/
+  ├── App.jsx                     Root: BrowserRouter > AuthProvider > AppRoutes + Toaster
+  ├── main.jsx                    ReactDOM.createRoot entry point
+  ├── index.css                   All global styles (CSS variables, utility classes)
+  │
+  ├── config/
+  │   └── constants.js            Single source of truth for enums, keys, labels
+  │
+  ├── context/
+  │   └── AuthContext.jsx         Global auth state (user, loading, login, logout)
+  │
+  ├── hooks/
+  │   ├── useMyApplication.js     Student's own application fetch
+  │   ├── useApplicationList.js   Paginated list with search/status/dept filters
+  │   ├── useApplicationDetail.js Single app + clearance/refund mutation actions
+  │   └── useDashboardStats.js    Stats + recent applications for admin dashboard
+  │
+  ├── services/
+  │   ├── authService.js          Auth API calls (thin wrappers over api instance)
+  │   └── applicationService.js   Application CRUD + clearance/refund API calls
+  │
+  ├── utils/
+  │   ├── api.js                  Axios instance: baseURL, auth interceptor, 401 handler
+  │   ├── formatters.js           formatDate, formatDateTime, timeAgo, getInitials, maskAccount
+  │   └── mappers.js              statusLabel, statusPill (CSS class), clearanceLabel
+  │
+  ├── router/
+  │   ├── AppRoutes.jsx           All <Route> definitions
+  │   ├── RequireAdmin.jsx        Admin guard with optional roles[] whitelist
+  │   └── RequireStudent.jsx      Student-only guard
+  │
+  ├── components/
+  │   └── common/
+  │       ├── index.jsx           All shared UI components (see list below)
+  │       └── Sidebar.jsx         Admin navigation sidebar
+  │
+  └── pages/
+      ├── Landing.jsx
+      ├── student/
+      │   ├── StudentAuth.jsx
+      │   ├── StudentDashboard.jsx
+      │   ├── StudentApplication.jsx
+      │   └── StudentStatus.jsx
+      └── admin/
+          ├── AdminLogin.jsx
+          ├── AdminDashboard.jsx
+          ├── AdminApplications.jsx
+          ├── AdminApplicationDetail.jsx
+          ├── AdminClearances.jsx
+          └── AdminRefunds.jsx
+
+--------------------------------------------------------------------------------
+MODULE ALIAS
+--------------------------------------------------------------------------------
+
+  @ → ./src        (configured in vite.config.js via path.resolve)
+
+  Usage:  import { useAuth } from '@/context/AuthContext'
+          import api from '@/utils/api'
+
+  Never use relative ../../ paths. All cross-module imports use @/.
+
+--------------------------------------------------------------------------------
+AXIOS INSTANCE  (src/utils/api.js)
+--------------------------------------------------------------------------------
+
+  const api = axios.create({
+    baseURL: '/api',
+    timeout: 15000,
+    headers: { 'Content-Type': 'application/json' },
+  });
+
+  Request interceptor:
+    → Reads iehe_token from localStorage
+    → Injects Authorization: Bearer <token> on every request
+
+  Response interceptor:
+    → On 401: clears localStorage, redirects to '/'
+    → All other errors: re-rejected (caller handles)
+
+  Dev proxy (vite.config.js):
+    /api  →  http://localhost:5000   (changeOrigin: true)
+
+  In production: Vercel routes /api to the backend deployment URL (set via
+  environment variable or rewrites config — confirm with backend team).
+
+--------------------------------------------------------------------------------
+AUTH FLOW  (src/context/AuthContext.jsx)
+--------------------------------------------------------------------------------
+
+  Storage keys (from constants.js):
+    TOKEN_KEY = 'iehe_token'
+    USER_KEY  = 'iehe_user'
+
+  On app mount:
+    loadUser() → reads TOKEN_KEY from localStorage
+              → if present: calls GET /auth/me
+              → on success: setUser(res.data.user)
+              → on failure: clears both keys
+              → always: setLoading(false)
+
+  login(token, userData):
+    → writes both keys to localStorage
+    → setUser(userData)   ← triggers re-render across all consumers
+
+  logout():
+    → removes both keys
+    → setUser(null)
+
+  The 401 interceptor in api.js clears storage + redirects without calling
+  AuthContext.logout() — this is intentional: hard redirect resets all state.
+
+  useAuth() throws if used outside <AuthProvider>.
+
+--------------------------------------------------------------------------------
+ROUTE GUARDS
+--------------------------------------------------------------------------------
+
+  RequireStudent:
+    if loading        → <Spinner /> (full viewport)
+    if !user          → <Navigate to="/student/login" />
+    if user.role !== 'student' → <Navigate to="/admin/dashboard" />
+    else              → render children
+
+  RequireAdmin({ roles? }):
+    if loading        → <Spinner />
+    if !user          → <Navigate to="/admin/login" />
+    if user.role === 'student' → <Navigate to="/student/dashboard" />
+    if roles && !roles.includes(user.role) → <Navigate to="/admin/dashboard" />
+    else              → render children
+
+  Role strings used in the app:
+    'superadmin' | 'library' | 'sports' | 'hostel' | 'department' | 'accounts' | 'student'
+
+  Routes with role restrictions:
+    /admin/clearances  → roles: ['library','sports','hostel','department','superadmin']
+    /admin/refunds     → roles: ['accounts','superadmin']
+    All other /admin/* → any non-student authenticated user
+
+--------------------------------------------------------------------------------
+API ENDPOINTS  (services layer)
+--------------------------------------------------------------------------------
+
+  authService.js
+  ──────────────
+  POST  /auth/student/login       studentLogin(creds)
+  POST  /auth/student/register    studentRegister(payload)
+  POST  /auth/admin/login         adminLogin(creds)
+  GET   /auth/me                  getMe()
+
+  applicationService.js
+  ─────────────────────
+  GET   /application/my                        getMyApplication()
+  POST  /application/submit                    submitApplication(payload)
+  GET   /application/all                       getAllApplications(params)
+        params: { page, limit:15, search?, status?, department? }
+  GET   /application/:id                       getApplicationById(id)
+  PATCH /application/:id/clearance             updateClearance(id, clearanceType, status, reason)
+        body: { clearanceType, status, reason }
+        clearanceType: 'library'|'sports'|'hostel'|'department'|'accounts'
+        status: 'cleared'|'hold'|'pending'|'na'
+  PATCH /application/:id/refund                processRefund(id)
+        response includes: { transactionId }
+  GET   /application/stats/dashboard           getDashboardStats()
+
+  Services are thin wrappers — no data transformation, no error handling.
+  All transformation and error handling happens in hooks or page handlers.
+
+--------------------------------------------------------------------------------
+CUSTOM HOOKS — PATTERN
+--------------------------------------------------------------------------------
+
+  All hooks follow this structure:
+    1. useState for data, loading, (error if needed)
+    2. useCallback-wrapped fetch function (refetch / refresh)
+    3. useEffect that calls refetch() when dependencies change
+    4. Returns data + loading + setters + refetch
+
+  useMyApplication()
+    Fetches GET /application/my on mount. No params.
+    Returns: { application, loading, refetch }
+
+  useApplicationList()
+    State: applications[], loading, search, statusFilter, deptFilter, page, total, pages
+    refetch() rebuilds params object from current state, calls getAllApplications()
+    useEffect depends on [search, statusFilter, deptFilter, page] via useCallback
+    Returns all state + setters + refetch
+
+  useApplicationDetail(id)
+    State: application, loading, updating
+    refresh() calls getApplicationById(id), on error navigates to /admin/applications
+    updateClearanceStatus(clearanceType, status, reason):
+      → validates reason if status === 'hold'
+      → calls updateClearance(), toasts result, calls refresh()
+      → returns boolean (success/failure)
+    triggerRefund():
+      → window.confirm gate
+      → calls processRefund(id), toasts transactionId, calls refresh()
+    Returns: { application, loading, updating, updateClearanceStatus, triggerRefund, refresh }
+
+  useDashboardStats()
+    Fetches GET /application/stats/dashboard on mount.
+    Returns: { stats, loading }
+
+--------------------------------------------------------------------------------
+SHARED UI COMPONENTS  (src/components/common/index.jsx)
+--------------------------------------------------------------------------------
+
+  All exported as named exports from a single file.
+
+  Spinner({ text })              Loading indicator with spinner + label
+  Alert({ type, children })      type: 'info'|'success'|'warning'|'danger'
+  StatusPill({ status })         Maps status string → CSS class via statusPill()
+  ClearanceCard({ type, data })  Dept clearance display with icon, pill, reason, updatedByName
+  KpiCard({ icon, value, label, color, sub })   Dashboard metric card
+  Modal({ open, onClose, title, subtitle, children })
+                                 Overlay modal; clicks outside calls onClose
+  InfoRow({ label, value, mono }) Label-value pair row
+  Timeline({ events[] })         events: { event, timestamp, description?, performedBy? }
+  StepProgress({ steps[], current })   Numbered step indicator; done/active/pending states
+  EmptyState({ icon, title, desc, action })   No-data placeholder
+  Field({ label, error, children, dark })   Form field wrapper with error display
+
+--------------------------------------------------------------------------------
+MAPPERS & FORMATTERS
+--------------------------------------------------------------------------------
+
+  mappers.js
+  ──────────
+  statusLabel(s)    → human readable application status string
+  statusPill(s)     → CSS class string ('pill-submitted', 'pill-review', etc.)
+  clearanceLabel(s) → human readable clearance status ('Awaiting Review', 'Cleared ✓', etc.)
+
+  formatters.js
+  ─────────────
+  formatDate(d)       → "26 Mar 2026"
+  formatDateTime(d)   → "26 Mar 2026, 10:30 AM"
+  timeAgo(d)          → "2 hours ago"
+  getInitials(name)   → "AB" from "Alice Brown"
+  maskAccount(num)    → "****1234"   (last 4 digits visible)
+
+--------------------------------------------------------------------------------
+CONSTANTS  (src/config/constants.js)
+--------------------------------------------------------------------------------
+
+  REFUND_AMOUNT         5000
+  REFUND_AMOUNT_DISPLAY '₹5,000'
+  PASSOUT_YEARS         [2026..2020]
+  DEPARTMENTS           ['CSE','IT','ECE','ME','CE','EE','MCA','MBA','Other']
+
+  ROLE_LABELS / ROLE_ICONS / DEPT_ICONS   display mappings for admin UI
+
+  CLEARANCE_ROLES       ['library','sports','hostel','department']
+  REFUND_ROLES          ['accounts','superadmin']
+
+  CLEARANCE_ROLE_MAP    maps each clearance type → which roles can update it
+    { library: ['library','superadmin'], sports: ['sports','superadmin'], ... }
+
+  STATUS_OPTS           array of { value, label } for filter dropdowns
+
+  APPLICATION_STATUS_STEPS   maps status string → step number (1–4)
+    submitted/under_review/on_hold → 2
+    fully_cleared → 3
+    refund_processed → 4
+
+  TOKEN_KEY             'iehe_token'
+  USER_KEY              'iehe_user'
+
+--------------------------------------------------------------------------------
+APPLICATION STATUS STATE MACHINE
+--------------------------------------------------------------------------------
+
+  submitted
+      ↓  (admin views it)
+  under_review
+      ↓  (some depts clear, others pending)
+  partially_cleared
+      ↓  (all 4 non-accounts depts clear)
+  fully_cleared
+      ↓  (accounts processes refund)
+  refund_processed
+
+  Parallel state at any point:
+  on_hold  ←  any dept puts clearance on hold
+
+  Status transitions are driven entirely by the backend.
+  Frontend reads status and renders accordingly.
+
+  Clearance statuses per department (independent per dept):
+    pending → cleared | hold | na
+
+--------------------------------------------------------------------------------
+APP.JSX PROVIDER TREE
+--------------------------------------------------------------------------------
+
+  <BrowserRouter>                ← enables useNavigate, useParams, etc.
+    <AuthProvider>               ← provides useAuth() to all children
+      <AppRoutes />              ← all route definitions
+      <Toaster ... />            ← global toast renderer (position: top-center)
+    </AuthProvider>
+  </BrowserRouter>
+
+  Toaster config:
+    duration: 4000ms
+    fontFamily: DM Sans, fontSize: 14, borderRadius: 12
+    success icon primary: #c9a84c (gold), secondary: #0a1628 (dark navy)
+
+--------------------------------------------------------------------------------
+VITE CONFIG SUMMARY
+--------------------------------------------------------------------------------
+
+  plugins:    [@vitejs/plugin-react]
+  alias:      @ → ./src
+  server.port: 5173
+  server.proxy:
+    /api → http://localhost:5000   (changeOrigin: true)
+
+--------------------------------------------------------------------------------
+VERCEL DEPLOYMENT
+--------------------------------------------------------------------------------
+
+  vercel.json sets a catch-all rewrite:
+    source: "/(.*)"  →  destination: "/index.html"
+
+  This is required for SPA client-side routing. Without it, a direct
+  browser request to /student/dashboard returns a 404 from Vercel.
+
+--------------------------------------------------------------------------------
+STYLING APPROACH
+--------------------------------------------------------------------------------
+
+  Plain CSS in src/index.css — no CSS modules, no Tailwind, no CSS-in-JS.
+  CSS custom properties (--gold, --muted, --dark, etc.) defined on :root.
+  Component classes are BEM-lite: .pill, .pill-submitted, .kpi-card, .ci-icon.
+  Inline styles used sparingly for one-off layout adjustments only.
+
+--------------------------------------------------------------------------------
+ADDING A NEW PAGE — CHECKLIST
+--------------------------------------------------------------------------------
+
+  1. Create file in src/pages/student/ or src/pages/admin/
+  2. If it needs data: create a hook in src/hooks/ using the established pattern
+  3. If it needs new API calls: add exports to the appropriate service file
+  4. Register the route in src/router/AppRoutes.jsx
+  5. Wrap with <RequireStudent> or <RequireAdmin roles={[...]}>
+  6. If admin: add nav link in src/components/common/Sidebar.jsx
+
+--------------------------------------------------------------------------------
+ADDING A NEW API CALL — CHECKLIST
+--------------------------------------------------------------------------------
+
+  1. Add a named export to the relevant service file (authService or applicationService)
+     → import api from '@/utils/api'  (never import axios directly in services)
+  2. Use the export inside a hook or page handler — never call services from other services
+  3. The api instance handles auth header and 401 globally — do not duplicate that logic
+
+================================================================================
