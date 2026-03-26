@@ -1,49 +1,55 @@
 ================================================================================
-  CAUTION MONEY REFUND PORTAL – FRONTEND TEAM RESPONSIBILITIES SUMMARY
-  Project: Digital Clearance & Caution Money Refund Portal, IEHE Bhopal
-  Tech Stack: React 18, Vite, React Router v6, Axios, CSS (custom)
+  CAUTION MONEY REFUND PORTAL – TEAM KA POORA HISAAB KITAAB
+  Project: IEHE Bhopal ka Digital Clearance & 5000 Rupaye Wapas Karo Portal
+  Tech Stack: React 18, Vite, React Router v6, Axios, CSS (haath se likha hua)
+  Vibe: Hustle hard, paise lao, college ko bhulo
 ================================================================================
 
---------------------------------------------------------------------------------
-1. JIVEETESH  |  Tech Lead & Core Architecture
---------------------------------------------------------------------------------
-Role:
-  - Led all technical research, ideation, and architectural decisions
-  - Established the project structure, module boundaries, and development standards
+bhai log, ye raha poora breakdown ki kisne kya kiya. no cap, sab ne kaam kiya
+(kuch zyada, kuch thoda, lekin sab credited hain kyunki hum team player hain).
 
-Responsibilities:
-  - Defined the full folder architecture: pages/, services/, hooks/, context/,
-    router/, config/, utils/ with @/ alias resolution
-  - Configured Vite build tool (vite.config.js): React plugin, path alias,
-    dev server (port 5173), and API proxy to backend (localhost:5000)
-  - Designed and implemented the authentication system:
-      * AuthContext.jsx — React Context providing user state, login(), logout(),
-        and loadUser() with localStorage persistence (iehe_token, iehe_user)
-      * RequireStudent.jsx — Route guard for student-protected pages
-      * RequireAdmin.jsx  — Route guard for admin-protected pages with
-        role-based access control (6 roles: superadmin, library, sports,
-        hostel, department, accounts)
-  - Built the API client layer (src/utils/api.js):
-      * Axios instance with /api baseURL
-      * Auto-attach Bearer token from localStorage
-      * 15s timeout configuration
-      * Auto-logout on 401 Unauthorized responses
-      * Request/response interceptors
-  - Implemented all service modules:
-      * authService.js — studentLogin, studentRegister, adminLogin, getMe
+--------------------------------------------------------------------------------
+1. JIVEETESH  |  Tech Lead, Head Nerd, "Bhai ye kaise karte hain" wala banda
+--------------------------------------------------------------------------------
+Vibe:
+  - Wo banda jo 2 baje raat ko bhi architecture diagrams bana raha tha
+  - Literally poore project ka baap. Research ki, socha, banaya, sab ko samjhaya
+  - "Pehle soch lo, phir code karo" — ye sirf usi ne follow kiya
+
+Kya kiya usne:
+  - Poora folder structure design kiya — pages/, services/, hooks/, context/,
+    router/, config/, utils/ — ek dum systematic, bilkul apni life ke opposite
+  - Vite configure kiya (vite.config.js): React plugin, @/ alias, dev server
+    port 5173 pe, aur backend ka proxy localhost:5000 pe
+    (matlab frontend ko pata hi nahi backend kahan hai, bus kaam karta hai)
+  - Auth system khada kiya, akela:
+      * AuthContext.jsx — React Context jo user ko yaad rakhta hai login ke baad
+        (localStorage mein iehe_token aur iehe_user daal ke, jugaad but works)
+      * RequireStudent.jsx — "Aye bhai tu student hai? Nahi? Nikal yahan se"
+      * RequireAdmin.jsx  — 6 roles handle karta hai: superadmin, library,
+        sports, hostel, department, accounts
+        (ek ek department ka bouncer basically)
+  - API client banaya (utils/api.js):
+      * Axios ka setup, /api baseURL
+      * Token automatically lagate hain har request mein, manually nahi karna
+      * 15 second mein timeout — library wale uncle se zyada patient nahi hai
+      * 401 aaya? Auto logout. Seedha. No drama.
+  - Dono services likhe:
+      * authService.js — login, register, adminLogin, getMe
       * applicationService.js — getMyApplication, submitApplication,
         getAllApplications, getApplicationById, updateClearance,
         processRefund, getDashboardStats
-  - Authored the application router (AppRoutes.jsx): all public, student, and
-    admin routes with role-based access enforcement
-  - Defined all global constants (config/constants.js):
-      * REFUND_AMOUNT, PASSOUT_YEARS, DEPARTMENTS, role labels/icons,
-        clearance role maps, application status steps, storage keys
-  - Built utility functions:
-      * formatters.js — formatDate, formatDateTime, timeAgo, getInitials,
-        maskAccount
-      * mappers.js — statusLabel, statusPill, clearanceLabel
-  - Enforced coding standards: Prettier config (.prettierrc), npm scripts
+        (basically poori app ki backbone, credit dena chahiye tha)
+  - Router likha (AppRoutes.jsx) — kaun sa route kahan jaata hai, role check,
+    guards lagaye, sab kuch. GPS tha poori app ka.
+  - Constants define ki (config/constants.js):
+      * REFUND_AMOUNT = 5000 (wahi 5k jo 4 saal se college ne rok rakha tha)
+      * DEPARTMENTS, PASSOUT_YEARS, role labels, status steps — sab
+  - Utility functions:
+      * formatters.js — date format, "2 days ago" wala time, account number mask
+      * mappers.js — status ko readable label mein convert karo
+  - Prettier config lagaya taaki kisi ka bhi code ganda na dikhे
+    (kuch logo ka dikhta tha, tab bhi)
 
 Key Files:
   vite.config.js, src/context/AuthContext.jsx,
@@ -54,78 +60,74 @@ Key Files:
   src/App.jsx, src/main.jsx, .prettierrc
 
 --------------------------------------------------------------------------------
-2. HARSH  |  Frontend UI/UX Lead
+2. HARSH  |  UI/UX Lead, "Ye color thoda aur dark chahiye tha" wala banda
 --------------------------------------------------------------------------------
-Role:
-  - Designed all page structures, visual layouts, and the complete design system
-  - Responsible for the overall look, feel, and user experience of the portal
+Vibe:
+  - Designer + Developer combo, dangerous combo
+  - Poori app ka shakal usne di hai. Literally. Ek ek pixel pe dhyan diya
+  - Uski wajah se ye project "meh" nahi, "waah" lagta hai
 
-Responsibilities:
-  - Authored the entire global stylesheet (src/index.css, 1512 lines):
-      * CSS custom properties (variables) for the full color palette:
-        Navy (#0a1628), Gold (#c9a84c), Cream, semantic colors (success,
-        warning, danger, info), 3-level shadow system
-      * Typography system: Playfair Display (headings), DM Sans (body),
-        JetBrains Mono (code/account numbers)
-      * Layout utilities: .dash-layout (sidebar + main), CSS Grid/Flexbox
-      * Component styles: .card, .btn / .btn-gold / .btn-outline,
-        .pill (status badges), .kpi-card, .clearance-item,
-        .form-* (inputs, labels, errors), .table-* (admin tables)
-      * Landing page: hero layout, mesh background, animated circles,
-        portal selection cards
-      * Responsive design across all breakpoints
-  - Built the Landing page (Landing.jsx):
-      * Hero section with portal introduction
-      * Student Portal and Admin Portal navigation cards
-      * Institution branding and refund amount display
-  - Designed and implemented all shared UI components (components/common/index.jsx):
-      * Spinner — loading indicator with optional text
-      * Alert — notification banner (success/warning/danger/info variants)
-      * StatusPill — color-coded status badge
-      * ClearanceCard — department clearance status display
-      * KpiCard — metric card with icon, value, and label
-      * Modal — reusable dialog overlay
-      * InfoRow — key-value display row (with monospace option)
-      * Timeline — activity/event timeline visualization
-      * StepProgress — multi-step form progress indicator
-      * EmptyState — placeholder with icon, title, description, action button
-      * Field — form input wrapper with label and error display
-  - Designed the dashboard shell layout (components/common/Sidebar.jsx):
-      * Sidebar component with student and admin navigation variants
-      * Topbar with user info, role badge, and logout action
-      * StudentSidebar — links: Dashboard, Application, Status, Profile
-      * AdminSidebar — role-based navigation links
+Kya kiya usne:
+  - index.css likha — 1512 LINES. Bhai. 1512. Ek hi file mein. Respect.
+      * CSS variables: Navy (#0a1628), Gold (#c9a84c), Cream — ek dum royal vibe
+        jaise college ki fee nahi, investment thi
+      * Fonts: Playfair Display headings ke liye (sophisticated lagta hai),
+        DM Sans body ke liye, JetBrains Mono account numbers ke liye
+        (programmer ki font — trust the process)
+      * Shadow system 3 levels — sm, md, lg (bhai shadows pe bhi system!)
+      * .card, .btn-gold, .pill, .kpi-card, .form-* — sab components ke styles
+      * Responsive design — phone pe bhi acha dikhta hai, kyunki 2024 hai
+  - Landing page banaya (Landing.jsx):
+      * Hero section — pehli nazar mein hi paise wapas milne ka feel
+      * Student Portal aur Admin Portal — do rasta, choose karo
+      * Animated circles, mesh background — aesthetic level: off the charts
+  - Poore shared components banaye (components/common/index.jsx):
+      * Spinner — loading ke time ghumta hua chakkar (life ki tarah)
+      * Alert — success/warning/danger/info (sab emotions covered)
+      * StatusPill — color-coded badge, ek nazar mein status pata
+      * ClearanceCard — department ne clear kiya ki nahi, seedha dikh jaata
+      * KpiCard — numbers bade bade dikhao, important feel hota hai
+      * Modal — popup dialog (jab important kaam hoga tabhi aayega)
+      * InfoRow — key: value display, clean aur simple
+      * Timeline — kab kya hua, scroll karke dekho poori life story
+      * StepProgress — step 1 of 4, badhte raho, mat ruko
+      * EmptyState — kuch nahi hai toh bhi acha dikhna chahiye
+      * Field — form input wrapper, error bhi dikhata hai (important!)
+  - Dashboard ka layout banaya (Sidebar.jsx):
+      * Left side navigation — student ke liye alag, admin ke liye alag
+      * Topbar — user ka naam, role badge, logout button
+      * AdminSidebar — role ke hisaab se links change ho jaate hain
 
 Key Files:
   src/index.css, src/pages/Landing.jsx,
   src/components/common/index.jsx, src/components/common/Sidebar.jsx
 
 --------------------------------------------------------------------------------
-3. SULABH  |  Student Authentication & Dashboard Developer
+3. SULABH  |  Student Login & Dashboard Developer, "Pehle login toh karne do"
 --------------------------------------------------------------------------------
-Role:
-  - Developed the student-facing authentication flow and dashboard
+Vibe:
+  - Pehla impression student ka usne banaya — pressure tha bhai
+  - Login kaam karta hai matlab sab kuch kaam karta hai, ye philosophy follow ki
 
-Responsibilities:
-  - Built StudentAuth.jsx — 3-step authentication page:
-      * Step 1 (Login): enrollment number + password form with validation
-      * Step 2 (Register - Personal Info): name, enrollment, year, department,
-        phone, email, password fields
-      * Step 3 (Register - Confirmation): review and submit registration
-      * Toggle between login and registration modes
-      * Integration with authService.studentLogin and authService.studentRegister
-      * Error handling with toast notifications
-      * Redirect to dashboard on successful auth
-  - Built StudentDashboard.jsx:
-      * Application status overview card with current status pill
-      * Department clearances summary (Library, Sports, Hostel, Department)
-      * Refund information display (amount ₹5,000, bank details preview)
-      * Quick action buttons (Apply, Check Status, Edit Profile)
-      * Welcome message with student name and enrollment details
-  - Implemented useMyApplication.js custom hook:
-      * Fetches student's own application via applicationService.getMyApplication
-      * Manages loading, error, and data states
-      * Provides refresh() function for re-fetching
+Kya kiya usne:
+  - StudentAuth.jsx banaya — 3 step ka login/register page:
+      * Step 1 (Login): enrollment number + password, seedha simple
+      * Step 2 (Register - Details): naam, enrollment, year, department,
+        phone, email, password — sab kuch bharo, college walo ko sab pata hoga
+      * Step 3 (Register - Confirm): ek baar aur dekho, phir bhejo
+      * Login aur register ke beech toggle — ek button pe sab
+      * Galat password? Toast notification aayega — "bhai galat hai"
+      * Sahi login? Dashboard pe redirect — "chal beta, aage badh"
+  - StudentDashboard.jsx banaya:
+      * Application ka current status ek nazar mein — "Under Review" wala feel
+      * 4 departments ki clearance status — library ne kiya? sports ne kiya?
+      * ₹5,000 ka refund info — account details, amount, sab dikh raha hai
+      * Quick action buttons — Apply, Status check, Profile edit
+      * "Namaste [Naam]!" wala welcome message — personal touch, nice
+  - useMyApplication.js hook banaya:
+      * Student ka apna application fetch karta hai
+      * Loading, error, data — teeno handle karta hai
+      * refresh() bhi hai — update chahiye? ek call karo
 
 Key Files:
   src/pages/student/StudentAuth.jsx,
@@ -133,116 +135,120 @@ Key Files:
   src/hooks/useMyApplication.js
 
 --------------------------------------------------------------------------------
-4. SHYAMHARI  |  Student Application & Status Developer
+4. SHYAMHARI  |  Application Form & Status Developer, "Form bharna easy karo"
 --------------------------------------------------------------------------------
-Role:
-  - Developed the student application submission and status tracking features
+Vibe:
+  - 4 step form banaya usne — clearly zyada patient hai baaki logo se
+  - Status page itna acha banaya ki anxiety kam ho jaati hai thodi
 
-Responsibilities:
-  - Built StudentApplication.jsx — 4-step refund application form:
-      * Step 1 (Personal Info): name, enrollment, year, department (pre-filled,
-        editable) with client-side validation
-      * Step 2 (Bank Details): account number, IFSC code, account holder name,
-        bank name — with input masking and format validation
-      * Step 3 (Declaration): digital declaration checkbox,
-        terms and conditions acknowledgment
-      * Step 4 (Submit): review all entered details, masked account number,
-        final submission via applicationService.submitApplication
-      * StepProgress component integration for visual step tracking
-      * Guard to prevent duplicate submissions (redirect if application exists)
-  - Built StudentStatus.jsx — visual application progress tracker:
-      * Step-by-step progress visualization across all 6 statuses:
+Kya kiya usne:
+  - StudentApplication.jsx — 4 step ka mega form:
+      * Step 1 (Personal Info): naam, enrollment, year, department pehle se
+        filled hain (Sulabh ka data use hua), edit bhi kar sakte ho
+      * Step 2 (Bank Details): account number, IFSC, bank naam — sab validate
+        hota hai, galat IFSC dalo toh bata dega
+        (SBI wale dhyan se bharna, 11 digit hota hai)
+      * Step 3 (Declaration): checkbox tick karo ki "haan bhai sab sach hai"
+        — digital signature basically, jugaad version
+      * Step 4 (Submit): poora review karo, account number masked dikhega
+        (****1234 — security conscious hai ye app)
+      * Double submission? Nahi hoga. Already applied hai? Redirect kar dega.
+        (ek baar kafi hai, college ko bhi pata hai)
+  - StudentStatus.jsx — progress tracker, anxiety ka ilaaj:
+      * 6 stages ka visual progress:
         Submitted → Under Review → Partially Cleared → Fully Cleared →
-        Refund Processed (with On Hold variant)
-      * Department clearance status grid (Library, Sports, Hostel, Department)
-      * Hold reason display when application is on hold
-      * Timeline component showing activity history with timestamps
-      * Refund transaction details when refund is processed
+        Refund Processed (aur On Hold — jab library wale naaraaz ho)
+      * 4 departments ki clearance grid — green tick = khushi, red = tension
+      * On Hold? Reason bhi dikhega — "book return nahi ki" etc.
+      * Timeline — kab kya hua, poori history
+      * Refund ho gaya? Transaction details bhi dikhega — kitne aaye, kab aaye
 
 Key Files:
   src/pages/student/StudentApplication.jsx,
   src/pages/student/StudentStatus.jsx
 
 --------------------------------------------------------------------------------
-5. GAURAV  |  Admin Dashboard & Analytics Developer
+5. GAURAV  |  Admin Dashboard Developer, "Numbers bade dikhao, boss impress ho"
 --------------------------------------------------------------------------------
-Role:
-  - Developed the admin dashboard with KPI analytics and overview features
+Vibe:
+  - Admin log pehli nazar mein numbers dekhna chahte hain — Gaurav ne diya
+  - KPI cards ka raja, analytics ka chakrawarti
 
-Responsibilities:
-  - Built AdminDashboard.jsx (285 lines):
-      * KPI cards grid: total applications, pending clearances,
+Kya kiya usne:
+  - AdminDashboard.jsx banaya (285 lines, impressive):
+      * 4 KPI cards: total applications, pending clearances,
         fully cleared, refunds processed
-      * Role-specific action shortcuts (quick links vary by admin role)
-      * Recent applications table: top 5 with enrollment, name, status,
-        department, submission date
-      * Status distribution overview
-      * Welcome section with role label and logged-in admin name
-      * Conditional rendering based on role (clearance vs. refund roles)
-  - Implemented useDashboardStats.js custom hook:
-      * Fetches KPI stats via applicationService.getDashboardStats
-      * Returns { stats, recentApplications, loading, error }
-      * Manages loading/error states for the dashboard
+        (basically scorecard — kaun kitna kaam kar raha hai)
+      * Role ke hisaab se shortcuts change ho jaate hain — smart UI
+      * Top 5 recent applications table — naam, enrollment, status, department
+      * Welcome section — "Namaste Library Wale Uncle!" vibe
+      * Clearance role? Alag dikhega. Accounts role? Alag dikhega.
+        Role-based conditional rendering — Jiveetesh ka infrastructure, Gaurav
+        ka implementation
+  - useDashboardStats.js hook banaya:
+      * Backend se stats fetch karta hai
+      * { stats, recentApplications, loading, error } return karta hai
+      * Loading mein spinner, error mein alert — sab handled
 
 Key Files:
   src/pages/admin/AdminDashboard.jsx,
   src/hooks/useDashboardStats.js
 
 --------------------------------------------------------------------------------
-6. NISHANT  |  Application List & Search/Filter Developer
+6. NISHANT  |  Applications List Developer, "Dhundh ke laata hoon"
 --------------------------------------------------------------------------------
-Role:
-  - Developed the admin application listing with search, filter, and pagination
+Vibe:
+  - Search aur filter ka bhai — koi bhi application miss nahi hogi uske hote
+  - Pagination implement kiya matlab data organize karna jaanta hai
 
-Responsibilities:
-  - Built AdminApplications.jsx (259 lines):
-      * Full application list table: enrollment, name, department, year,
-        status pill, submission date, action link
-      * Search bar: real-time filter by enrollment number or student name
-      * Status filter dropdown: filter by any application status
-      * Pagination controls: page navigation with items-per-page count
-      * Empty state handling when no results match
-      * Loading skeleton while fetching
-      * Link to AdminApplicationDetail for each row
-  - Implemented useApplicationList.js custom hook:
-      * Fetches paginated applications via applicationService.getAllApplications
-      * Accepts params: { search, status, page, limit }
-      * Returns { applications, pagination, loading, error, refetch }
-      * Manages debounced search and filter state
+Kya kiya usne:
+  - AdminApplications.jsx banaya (259 lines):
+      * Poori application list — enrollment, naam, department, year,
+        status pill (color coded), date, aur detail pe jaane ka link
+      * Search bar — naam ya enrollment se dhundo, real-time filter
+        (type karo, turant dikhega, no delay no drama)
+      * Status filter dropdown — sirf "Under Review" wale dikhao? Done.
+      * Pagination — ek page pe itne hi, next ke liye arrow dabao
+      * Kuch nahi mila? EmptyState dikhega — "Koi application nahi mili bhai"
+      * Data aa raha hai? Skeleton/loading dikhega — no blank screen
+  - useApplicationList.js hook banaya:
+      * Paginated applications fetch karta hai
+      * search, status, page, limit — sab params accept karta hai
+      * Debounced search — bar bar API call nahi, thoda ruko phir dhundo
+      * { applications, pagination, loading, error, refetch } return karta hai
 
 Key Files:
   src/pages/admin/AdminApplications.jsx,
   src/hooks/useApplicationList.js
 
 --------------------------------------------------------------------------------
-7. SADAQAT  |  Application Detail & Clearance Management Developer
+7. SADAQAT  |  Clearance Management Developer, "Approve karo ya reject, decide karo"
 --------------------------------------------------------------------------------
-Role:
-  - Developed the application detail view and department clearance management
+Vibe:
+  - Sabse zyada power wala UI banaya — approve/reject/hold buttons real mein
+    kaam karte hain, iska kaam sahi nahi hota toh poora system fail
+  - Department wale uncle log isi page pe kaam karte hain, responsibility bhari hai
 
-Responsibilities:
-  - Built AdminApplicationDetail.jsx (317 lines):
-      * Full application information display: personal details, bank details
-        (masked account), submission metadata
-      * Department clearance status cards (Library, Sports, Hostel, Department)
-      * Clearance action controls: approve / reject / put on hold (with reason)
-      * Hold reason modal with textarea input
-      * InfoRow components for structured key-value data display
-      * Role-based action visibility (only relevant role can update clearance)
-      * Activity timeline showing full audit history with timestamps
-      * Toast notifications for clearance update success/failure
-  - Built AdminClearances.jsx (219 lines):
-      * Department staff focused view: shows only applications pending
-        clearance for the logged-in staff's department
-      * Quick approve/reject/hold actions directly from the list
-      * Filter by pending vs. all applications for the department
-      * Compact application cards with student info and action buttons
-  - Implemented useApplicationDetail.js custom hook:
-      * Fetches single application via applicationService.getApplicationById
-      * updateClearance(id, type, status, reason) — calls
-        applicationService.updateClearance and refetches
-      * processRefund(id) — calls applicationService.processRefund
-      * Returns { application, loading, error, updateClearance, processRefund }
+Kya kiya usne:
+  - AdminApplicationDetail.jsx banaya (317 lines — biggest page):
+      * Student ki poori details — naam, enrollment, department, bank account
+        (masked ****1234), sab kuch
+      * 4 department clearance cards — Library, Sports, Hostel, Department
+      * Approve / Reject / Hold buttons — seedhe kaam ki baat
+      * Hold kiya? Reason likhna padega modal mein — accountability hai
+      * Sirf apne role ka button active hoga — library wale sports clear nahi
+        kar sakte, fair enough
+      * Activity Timeline — kab kya hua, kab kisne kya kiya, poora record
+      * Toast notification — kaam ho gaya ya nahi, turant pata chalega
+  - AdminClearances.jsx banaya (219 lines):
+      * Department staff ke liye focused view — sirf apne wale applications
+      * Quick approve/reject/hold directly from list — detail pe jaane ki
+        zaroorat nahi, fast kaam karo
+      * Pending filter — sirf jo bache hain wo dikhao
+  - useApplicationDetail.js hook banaya:
+      * Single application fetch karta hai
+      * updateClearance(id, type, status, reason) — clearance update + refetch
+      * processRefund(id) — Mohit bhai ke liye bhi kaam aaya ye hook
 
 Key Files:
   src/pages/admin/AdminApplicationDetail.jsx,
@@ -250,53 +256,60 @@ Key Files:
   src/hooks/useApplicationDetail.js
 
 --------------------------------------------------------------------------------
-8. MOHIT  |  Refund Processing Developer
+8. MOHIT  |  Refund Processing Developer, "Paise bhejo bhai, bas itna hi kaam"
 --------------------------------------------------------------------------------
-Role:
-  - Developed the refund management interface for accounts staff
+Vibe:
+  - Poore workflow ka last step usne banaya — sabka kaam ho gaya, ab Mohit
+    button dabayega aur paise jaaenge
+  - Chhota page, badi responsibility — 5000 rupaye ka matter hai bhai
 
-Responsibilities:
-  - Built AdminRefunds.jsx (223 lines):
-      * Refund queue: lists all fully-cleared applications awaiting refund
-      * Application cards: student info, bank details (masked account number,
-        IFSC, bank name), clearance confirmation badge
-      * Process Refund button with confirmation modal before action
-      * Completed refunds section: shows processed refunds with transaction
-        details and timestamps
-      * Filter toggle: pending vs. all refunds
-      * Empty state when queue is empty
-      * Integration with useApplicationDetail.processRefund
-      * Toast notifications for refund success/failure
-      * Role guard — only visible to accounts and superadmin roles
-  - Integrated refund processing flow end-to-end:
-      * Confirmed correct use of applicationService.processRefund
-      * Verified masked bank account display using maskAccount utility
-      * Tested refund state transitions (fully_cleared → refund_processed)
+Kya kiya usne:
+  - AdminRefunds.jsx banaya (223 lines):
+      * Refund queue — fully cleared ho gaye? Yahan dikho, paise lo
+      * Har application card mein: naam, enrollment, bank details
+        (masked account number, IFSC, bank naam — sab)
+      * Clearance badge — confirm hai ki sab ne clear kiya
+      * "Process Refund" button — ek click, confirmation modal aayega
+        (confirmation isliye kyunki paise wapas nahi hote)
+      * Completed refunds section — ho gaya jo, record rakhte hain
+      * Pending aur sab refunds toggle — filter bhi hai
+      * Queue empty? EmptyState — "Sab clear bhai, aaj ka kaam khatam"
+      * Sirf accounts aur superadmin ko dikhega — baakon ko kya kaam
+      * Toast notification — "Refund processed!" — sabse khushi wali notification
+  - End-to-end flow verify kiya:
+      * applicationService.processRefund sahi se call hota hai
+      * maskAccount utility se account number sahi dikhta hai
+      * fully_cleared → refund_processed — state transition kaam karta hai
 
 Key Files:
   src/pages/admin/AdminRefunds.jsx
 
 ================================================================================
-  SUMMARY TABLE
+  QUICK SUMMARY — KAUN KISKA BAAP HAI (TECHNICALLY)
 ================================================================================
 
-  #  Name         Role                              Primary Ownership
-  -  ----------   --------------------------------  ----------------------------
-  1  Jiveetesh    Tech Lead & Core Architecture     Architecture, Auth, API,
-                                                    Router, Services, Config
-  2  Harsh        UI/UX Lead                        Design System, CSS,
-                                                    Landing, Components, Layout
-  3  Sulabh       Student Auth & Dashboard          StudentAuth, StudentDashboard,
-                                                    useMyApplication
-  4  Shyamhari    Student Application & Status      StudentApplication,
-                                                    StudentStatus
-  5  Gaurav       Admin Dashboard & Analytics       AdminDashboard,
-                                                    useDashboardStats
-  6  Nishant      Application List & Filtering      AdminApplications,
-                                                    useApplicationList
-  7  Sadaqat      Clearance Management              AdminApplicationDetail,
-                                                    AdminClearances,
-                                                    useApplicationDetail
-  8  Mohit        Refund Processing                 AdminRefunds
+  #  Naam         Kya Bana          Ek Line Mein
+  -  ----------   ----------------  ------------------------------------------
+  1  Jiveetesh    Sab kuch ka base  Architect, baap of all files, nींद nahi aayi
+  2  Harsh        Sab kuch ki shakal  CSS king, 1512 lines, design system OG
+  3  Sulabh       Student login + dashboard  Pehla impression, handled nicely
+  4  Shyamhari    Application form + status  4 step form, anxiety kam ki
+  5  Gaurav       Admin dashboard   Numbers bade dikhaye, boss impressed
+  6  Nishant      Applications list  Search-filter-pagination, sab dhundh ke laya
+  7  Sadaqat      Clearance management  Approve/reject ka raja, 317 lines ka hero
+  8  Mohit        Refund bheja      Last step, sabse important button dabaya
+
+  Disclaimer: Koi bhi "bas ideas diya" wali category mein nahi hai.
+  Sab ne code likha, sab ne contribute kiya, sab deserve karte hain chai.
+
+================================================================================
+  FINAL NOTE
+================================================================================
+
+  Ye project ek graduating student ke 5000 rupaye wapas dilane ke liye banaya
+  gaya tha. Technically ek noble cause. Practically, ek sem 6 project.
+  Dono cheezein sach hain.
+
+  Git blame mat karna. Hum sab dost hain.
 
 ================================================================================
