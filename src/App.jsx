@@ -1,121 +1,161 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { Toaster } from 'react-hot-toast';
+import { AuthProvider, useAuth } from './context/AuthContext';
+import { Spinner } from './components/common';
 
-function App() {
-  const [count, setCount] = useState(0)
+// Pages
+import Landing from './pages/Landing';
+import StudentAuth from './pages/student/StudentAuth';
+import StudentDashboard from './pages/student/StudentDashboard';
+import StudentApplication from './pages/student/StudentApplication';
+import StudentStatus from './pages/student/StudentStatus';
+import AdminLogin from './pages/admin/AdminLogin';
+import AdminDashboard from './pages/admin/AdminDashboard';
+import AdminApplications from './pages/admin/AdminApplications';
+import AdminApplicationDetail from './pages/admin/AdminApplicationDetail';
+import { AdminClearances, AdminRefunds } from './pages/admin/AdminClearancesAndRefunds';
 
+// ── Protected Route Guards ────────────────────────────────────────
+const RequireStudent = ({ children }) => {
+  const { user, loading } = useAuth();
+  if (loading)
+    return (
+      <div
+        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh' }}
+      >
+        <Spinner />
+      </div>
+    );
+  if (!user) return <Navigate to="/student/login" replace />;
+  if (user.role !== 'student') return <Navigate to="/admin/dashboard" replace />;
+  return children;
+};
+
+const RequireAdmin = ({ children, roles }) => {
+  const { user, loading } = useAuth();
+  if (loading)
+    return (
+      <div
+        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh' }}
+      >
+        <Spinner />
+      </div>
+    );
+  if (!user) return <Navigate to="/admin/login" replace />;
+  if (user.role === 'student') return <Navigate to="/student/dashboard" replace />;
+  if (roles && !roles.includes(user.role)) return <Navigate to="/admin/dashboard" replace />;
+  return children;
+};
+
+// ── App Routes ────────────────────────────────────────────────────
+function AppRoutes() {
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+    <Routes>
+      {/* Public */}
+      <Route path="/" element={<Landing />} />
+      <Route path="/student/login" element={<StudentAuth />} />
+      <Route path="/admin/login" element={<AdminLogin />} />
 
-      <div className="ticks"></div>
+      {/* Student */}
+      <Route
+        path="/student/dashboard"
+        element={
+          <RequireStudent>
+            <StudentDashboard />
+          </RequireStudent>
+        }
+      />
+      <Route
+        path="/student/application"
+        element={
+          <RequireStudent>
+            <StudentApplication />
+          </RequireStudent>
+        }
+      />
+      <Route
+        path="/student/status"
+        element={
+          <RequireStudent>
+            <StudentStatus />
+          </RequireStudent>
+        }
+      />
+      <Route
+        path="/student/profile"
+        element={
+          <RequireStudent>
+            <StudentDashboard />
+          </RequireStudent>
+        }
+      />
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+      {/* Admin — all roles */}
+      <Route
+        path="/admin/dashboard"
+        element={
+          <RequireAdmin>
+            <AdminDashboard />
+          </RequireAdmin>
+        }
+      />
+      <Route
+        path="/admin/applications"
+        element={
+          <RequireAdmin>
+            <AdminApplications />
+          </RequireAdmin>
+        }
+      />
+      <Route
+        path="/admin/application/:id"
+        element={
+          <RequireAdmin>
+            <AdminApplicationDetail />
+          </RequireAdmin>
+        }
+      />
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+      {/* Dept-specific */}
+      <Route
+        path="/admin/clearances"
+        element={
+          <RequireAdmin roles={['library', 'sports', 'hostel', 'department', 'superadmin']}>
+            <AdminClearances />
+          </RequireAdmin>
+        }
+      />
+
+      {/* Accounts + superadmin */}
+      <Route
+        path="/admin/refunds"
+        element={
+          <RequireAdmin roles={['accounts', 'superadmin']}>
+            <AdminRefunds />
+          </RequireAdmin>
+        }
+      />
+
+      {/* Fallbacks */}
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
+  );
 }
 
-export default App
+export default function App() {
+  return (
+    <BrowserRouter>
+      <AuthProvider>
+        <AppRoutes />
+        <Toaster
+          position="top-center"
+          toastOptions={{
+            duration: 4000,
+            style: { fontFamily: 'DM Sans', fontSize: 14, borderRadius: 12, padding: '12px 18px' },
+            success: { iconTheme: { primary: '#c9a84c', secondary: '#0a1628' } },
+          }}
+        />
+      </AuthProvider>
+    </BrowserRouter>
+  );
+}
