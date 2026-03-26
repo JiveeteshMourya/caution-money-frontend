@@ -1,0 +1,302 @@
+================================================================================
+  CAUTION MONEY REFUND PORTAL – FRONTEND TEAM RESPONSIBILITIES SUMMARY
+  Project: Digital Clearance & Caution Money Refund Portal, IEHE Bhopal
+  Tech Stack: React 18, Vite, React Router v6, Axios, CSS (custom)
+================================================================================
+
+--------------------------------------------------------------------------------
+1. JIVEETESH  |  Tech Lead & Core Architecture
+--------------------------------------------------------------------------------
+Role:
+  - Led all technical research, ideation, and architectural decisions
+  - Established the project structure, module boundaries, and development standards
+
+Responsibilities:
+  - Defined the full folder architecture: pages/, services/, hooks/, context/,
+    router/, config/, utils/ with @/ alias resolution
+  - Configured Vite build tool (vite.config.js): React plugin, path alias,
+    dev server (port 5173), and API proxy to backend (localhost:5000)
+  - Designed and implemented the authentication system:
+      * AuthContext.jsx — React Context providing user state, login(), logout(),
+        and loadUser() with localStorage persistence (iehe_token, iehe_user)
+      * RequireStudent.jsx — Route guard for student-protected pages
+      * RequireAdmin.jsx  — Route guard for admin-protected pages with
+        role-based access control (6 roles: superadmin, library, sports,
+        hostel, department, accounts)
+  - Built the API client layer (src/utils/api.js):
+      * Axios instance with /api baseURL
+      * Auto-attach Bearer token from localStorage
+      * 15s timeout configuration
+      * Auto-logout on 401 Unauthorized responses
+      * Request/response interceptors
+  - Implemented all service modules:
+      * authService.js — studentLogin, studentRegister, adminLogin, getMe
+      * applicationService.js — getMyApplication, submitApplication,
+        getAllApplications, getApplicationById, updateClearance,
+        processRefund, getDashboardStats
+  - Authored the application router (AppRoutes.jsx): all public, student, and
+    admin routes with role-based access enforcement
+  - Defined all global constants (config/constants.js):
+      * REFUND_AMOUNT, PASSOUT_YEARS, DEPARTMENTS, role labels/icons,
+        clearance role maps, application status steps, storage keys
+  - Built utility functions:
+      * formatters.js — formatDate, formatDateTime, timeAgo, getInitials,
+        maskAccount
+      * mappers.js — statusLabel, statusPill, clearanceLabel
+  - Enforced coding standards: Prettier config (.prettierrc), npm scripts
+
+Key Files:
+  vite.config.js, src/context/AuthContext.jsx,
+  src/router/AppRoutes.jsx, src/router/RequireStudent.jsx,
+  src/router/RequireAdmin.jsx, src/utils/api.js,
+  src/services/authService.js, src/services/applicationService.js,
+  src/config/constants.js, src/utils/formatters.js, src/utils/mappers.js,
+  src/App.jsx, src/main.jsx, .prettierrc
+
+--------------------------------------------------------------------------------
+2. HARSH  |  Frontend UI/UX Lead
+--------------------------------------------------------------------------------
+Role:
+  - Designed all page structures, visual layouts, and the complete design system
+  - Responsible for the overall look, feel, and user experience of the portal
+
+Responsibilities:
+  - Authored the entire global stylesheet (src/index.css, 1512 lines):
+      * CSS custom properties (variables) for the full color palette:
+        Navy (#0a1628), Gold (#c9a84c), Cream, semantic colors (success,
+        warning, danger, info), 3-level shadow system
+      * Typography system: Playfair Display (headings), DM Sans (body),
+        JetBrains Mono (code/account numbers)
+      * Layout utilities: .dash-layout (sidebar + main), CSS Grid/Flexbox
+      * Component styles: .card, .btn / .btn-gold / .btn-outline,
+        .pill (status badges), .kpi-card, .clearance-item,
+        .form-* (inputs, labels, errors), .table-* (admin tables)
+      * Landing page: hero layout, mesh background, animated circles,
+        portal selection cards
+      * Responsive design across all breakpoints
+  - Built the Landing page (Landing.jsx):
+      * Hero section with portal introduction
+      * Student Portal and Admin Portal navigation cards
+      * Institution branding and refund amount display
+  - Designed and implemented all shared UI components (components/common/index.jsx):
+      * Spinner — loading indicator with optional text
+      * Alert — notification banner (success/warning/danger/info variants)
+      * StatusPill — color-coded status badge
+      * ClearanceCard — department clearance status display
+      * KpiCard — metric card with icon, value, and label
+      * Modal — reusable dialog overlay
+      * InfoRow — key-value display row (with monospace option)
+      * Timeline — activity/event timeline visualization
+      * StepProgress — multi-step form progress indicator
+      * EmptyState — placeholder with icon, title, description, action button
+      * Field — form input wrapper with label and error display
+  - Designed the dashboard shell layout (components/common/Sidebar.jsx):
+      * Sidebar component with student and admin navigation variants
+      * Topbar with user info, role badge, and logout action
+      * StudentSidebar — links: Dashboard, Application, Status, Profile
+      * AdminSidebar — role-based navigation links
+
+Key Files:
+  src/index.css, src/pages/Landing.jsx,
+  src/components/common/index.jsx, src/components/common/Sidebar.jsx
+
+--------------------------------------------------------------------------------
+3. SULABH  |  Student Authentication & Dashboard Developer
+--------------------------------------------------------------------------------
+Role:
+  - Developed the student-facing authentication flow and dashboard
+
+Responsibilities:
+  - Built StudentAuth.jsx — 3-step authentication page:
+      * Step 1 (Login): enrollment number + password form with validation
+      * Step 2 (Register - Personal Info): name, enrollment, year, department,
+        phone, email, password fields
+      * Step 3 (Register - Confirmation): review and submit registration
+      * Toggle between login and registration modes
+      * Integration with authService.studentLogin and authService.studentRegister
+      * Error handling with toast notifications
+      * Redirect to dashboard on successful auth
+  - Built StudentDashboard.jsx:
+      * Application status overview card with current status pill
+      * Department clearances summary (Library, Sports, Hostel, Department)
+      * Refund information display (amount ₹5,000, bank details preview)
+      * Quick action buttons (Apply, Check Status, Edit Profile)
+      * Welcome message with student name and enrollment details
+  - Implemented useMyApplication.js custom hook:
+      * Fetches student's own application via applicationService.getMyApplication
+      * Manages loading, error, and data states
+      * Provides refresh() function for re-fetching
+
+Key Files:
+  src/pages/student/StudentAuth.jsx,
+  src/pages/student/StudentDashboard.jsx,
+  src/hooks/useMyApplication.js
+
+--------------------------------------------------------------------------------
+4. SHYAMHARI  |  Student Application & Status Developer
+--------------------------------------------------------------------------------
+Role:
+  - Developed the student application submission and status tracking features
+
+Responsibilities:
+  - Built StudentApplication.jsx — 4-step refund application form:
+      * Step 1 (Personal Info): name, enrollment, year, department (pre-filled,
+        editable) with client-side validation
+      * Step 2 (Bank Details): account number, IFSC code, account holder name,
+        bank name — with input masking and format validation
+      * Step 3 (Declaration): digital declaration checkbox,
+        terms and conditions acknowledgment
+      * Step 4 (Submit): review all entered details, masked account number,
+        final submission via applicationService.submitApplication
+      * StepProgress component integration for visual step tracking
+      * Guard to prevent duplicate submissions (redirect if application exists)
+  - Built StudentStatus.jsx — visual application progress tracker:
+      * Step-by-step progress visualization across all 6 statuses:
+        Submitted → Under Review → Partially Cleared → Fully Cleared →
+        Refund Processed (with On Hold variant)
+      * Department clearance status grid (Library, Sports, Hostel, Department)
+      * Hold reason display when application is on hold
+      * Timeline component showing activity history with timestamps
+      * Refund transaction details when refund is processed
+
+Key Files:
+  src/pages/student/StudentApplication.jsx,
+  src/pages/student/StudentStatus.jsx
+
+--------------------------------------------------------------------------------
+5. GAURAV  |  Admin Dashboard & Analytics Developer
+--------------------------------------------------------------------------------
+Role:
+  - Developed the admin dashboard with KPI analytics and overview features
+
+Responsibilities:
+  - Built AdminDashboard.jsx (285 lines):
+      * KPI cards grid: total applications, pending clearances,
+        fully cleared, refunds processed
+      * Role-specific action shortcuts (quick links vary by admin role)
+      * Recent applications table: top 5 with enrollment, name, status,
+        department, submission date
+      * Status distribution overview
+      * Welcome section with role label and logged-in admin name
+      * Conditional rendering based on role (clearance vs. refund roles)
+  - Implemented useDashboardStats.js custom hook:
+      * Fetches KPI stats via applicationService.getDashboardStats
+      * Returns { stats, recentApplications, loading, error }
+      * Manages loading/error states for the dashboard
+
+Key Files:
+  src/pages/admin/AdminDashboard.jsx,
+  src/hooks/useDashboardStats.js
+
+--------------------------------------------------------------------------------
+6. NISHANT  |  Application List & Search/Filter Developer
+--------------------------------------------------------------------------------
+Role:
+  - Developed the admin application listing with search, filter, and pagination
+
+Responsibilities:
+  - Built AdminApplications.jsx (259 lines):
+      * Full application list table: enrollment, name, department, year,
+        status pill, submission date, action link
+      * Search bar: real-time filter by enrollment number or student name
+      * Status filter dropdown: filter by any application status
+      * Pagination controls: page navigation with items-per-page count
+      * Empty state handling when no results match
+      * Loading skeleton while fetching
+      * Link to AdminApplicationDetail for each row
+  - Implemented useApplicationList.js custom hook:
+      * Fetches paginated applications via applicationService.getAllApplications
+      * Accepts params: { search, status, page, limit }
+      * Returns { applications, pagination, loading, error, refetch }
+      * Manages debounced search and filter state
+
+Key Files:
+  src/pages/admin/AdminApplications.jsx,
+  src/hooks/useApplicationList.js
+
+--------------------------------------------------------------------------------
+7. SADAQAT  |  Application Detail & Clearance Management Developer
+--------------------------------------------------------------------------------
+Role:
+  - Developed the application detail view and department clearance management
+
+Responsibilities:
+  - Built AdminApplicationDetail.jsx (317 lines):
+      * Full application information display: personal details, bank details
+        (masked account), submission metadata
+      * Department clearance status cards (Library, Sports, Hostel, Department)
+      * Clearance action controls: approve / reject / put on hold (with reason)
+      * Hold reason modal with textarea input
+      * InfoRow components for structured key-value data display
+      * Role-based action visibility (only relevant role can update clearance)
+      * Activity timeline showing full audit history with timestamps
+      * Toast notifications for clearance update success/failure
+  - Built AdminClearances.jsx (219 lines):
+      * Department staff focused view: shows only applications pending
+        clearance for the logged-in staff's department
+      * Quick approve/reject/hold actions directly from the list
+      * Filter by pending vs. all applications for the department
+      * Compact application cards with student info and action buttons
+  - Implemented useApplicationDetail.js custom hook:
+      * Fetches single application via applicationService.getApplicationById
+      * updateClearance(id, type, status, reason) — calls
+        applicationService.updateClearance and refetches
+      * processRefund(id) — calls applicationService.processRefund
+      * Returns { application, loading, error, updateClearance, processRefund }
+
+Key Files:
+  src/pages/admin/AdminApplicationDetail.jsx,
+  src/pages/admin/AdminClearances.jsx,
+  src/hooks/useApplicationDetail.js
+
+--------------------------------------------------------------------------------
+8. MOHIT  |  Refund Processing Developer
+--------------------------------------------------------------------------------
+Role:
+  - Developed the refund management interface for accounts staff
+
+Responsibilities:
+  - Built AdminRefunds.jsx (223 lines):
+      * Refund queue: lists all fully-cleared applications awaiting refund
+      * Application cards: student info, bank details (masked account number,
+        IFSC, bank name), clearance confirmation badge
+      * Process Refund button with confirmation modal before action
+      * Completed refunds section: shows processed refunds with transaction
+        details and timestamps
+      * Filter toggle: pending vs. all refunds
+      * Empty state when queue is empty
+      * Integration with useApplicationDetail.processRefund
+      * Toast notifications for refund success/failure
+      * Role guard — only visible to accounts and superadmin roles
+  - Integrated refund processing flow end-to-end:
+      * Confirmed correct use of applicationService.processRefund
+      * Verified masked bank account display using maskAccount utility
+      * Tested refund state transitions (fully_cleared → refund_processed)
+
+Key Files:
+  src/pages/admin/AdminRefunds.jsx
+
+================================================================================
+  SUMMARY TABLE
+================================================================================
+
+  #  Name         Role                              Primary Ownership
+  -  ----------   --------------------------------  ----------------------------
+  1  Jiveetesh    Tech Lead & Core Architecture     Architecture, Auth, API,
+                                                    Router, Services, Config
+  2  Harsh        UI/UX Lead                        Design System, CSS,
+                                                    Landing, Components, Layout
+  3  Sulabh       Student Auth & Dashboard          StudentAuth, StudentDashboard,
+                                                    useMyApplication
+  4  Shyamhari    Student Application & Status      StudentApplication,
+                                                    StudentStatus
+  5  Gaurav       Admin Dashboard & Analytics       AdminDashboard,
+                                                    useDashboardStats
+  6  Nishant      Application List & Filtering      AdminApplications,
+                                                    useApplicationList
+  7  Sadaqat      Clearance Management              AdminApplicationDetail,
+                                                    AdminClearances,
+                                                    useApplicationDetail
+  8  Mohit        Refund Processing                 AdminRefunds
+
+================================================================================
