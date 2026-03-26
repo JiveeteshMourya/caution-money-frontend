@@ -1,167 +1,176 @@
 ================================================================================
   CAUTION MONEY REFUND PORTAL — Frontend Technical Summary
+  (Developer ke liye, developer dwara — padh le, kaam aayega)
 ================================================================================
 
 --------------------------------------------------------------------------------
-TECH STACK
+TECH STACK — Kya Kya Laga Rakha Hai
 --------------------------------------------------------------------------------
 
   Runtime / Build     React 18.3 + Vite 5.3
-  Language            JSX (no TypeScript)
+  Language            JSX  (TypeScript nahi — hum simple log hain)
   Routing             React Router DOM v6
-  HTTP Client         Axios 1.7 (single configured instance)
-  State               React Context API + custom hooks (no Redux/Zustand)
+  HTTP Client         Axios 1.7  (ek hi instance, poori app use karta hai)
+  State               Context API + custom hooks  (Redux? Nahi chahiye, bhai)
   Notifications       react-hot-toast 2.4
   Icons               react-icons 5.2
   Date Formatting     date-fns 3.6
-  Deployment          Vercel (SPA rewrite via vercel.json)
-  Dev Port            5173 (Vite) → proxies /api to localhost:5000
+  Deployment          Vercel  (SPA rewrite vercel.json mein)
+  Dev Port            5173  →  /api proxy  →  localhost:5000
 
 --------------------------------------------------------------------------------
-PROJECT STRUCTURE
+PROJECT STRUCTURE — Ghar Ka Naksha
 --------------------------------------------------------------------------------
 
   src/
-  ├── App.jsx                     Root: BrowserRouter > AuthProvider > AppRoutes + Toaster
-  ├── main.jsx                    ReactDOM.createRoot entry point
-  ├── index.css                   All global styles (CSS variables, utility classes)
+  ├── App.jsx                   Root hai yeh. BrowserRouter > AuthProvider >
+  │                             AppRoutes + Toaster. Sab yahan se shuru.
+  ├── main.jsx                  ReactDOM.createRoot — app ka janam hota hai yahan
+  ├── index.css                 Poori app ki CSS. Variables, utility classes, sab.
   │
   ├── config/
-  │   └── constants.js            Single source of truth for enums, keys, labels
+  │   └── constants.js          Ek jagah sab hardcoded values. Yahan se change
+  │                             karo, poori app mein change ho jaata hai. Smart.
   │
   ├── context/
-  │   └── AuthContext.jsx         Global auth state (user, loading, login, logout)
+  │   └── AuthContext.jsx       "Kaun logged in hai?" — poori app ko pata rehta hai
   │
-  ├── hooks/
-  │   ├── useMyApplication.js     Student's own application fetch
-  │   ├── useApplicationList.js   Paginated list with search/status/dept filters
-  │   ├── useApplicationDetail.js Single app + clearance/refund mutation actions
-  │   └── useDashboardStats.js    Stats + recent applications for admin dashboard
+  ├── hooks/                    Data fetching ka kaam yahan hota hai. Pages sirf
+  │   ├── useMyApplication.js   display karte hain, hooks data laate hain.
+  │   ├── useApplicationList.js Pagination + filters wala bada hook
+  │   ├── useApplicationDetail.js Ek application ki detail + actions
+  │   └── useDashboardStats.js  Admin dashboard ke numbers
   │
-  ├── services/
-  │   ├── authService.js          Auth API calls (thin wrappers over api instance)
-  │   └── applicationService.js   Application CRUD + clearance/refund API calls
+  ├── services/                 Backend se baat karne ke liye thin wrappers.
+  │   ├── authService.js        Sirf API calls — koi logic nahi, koi drama nahi
+  │   └── applicationService.js Application ke saare CRUD calls
   │
   ├── utils/
-  │   ├── api.js                  Axios instance: baseURL, auth interceptor, 401 handler
-  │   ├── formatters.js           formatDate, formatDateTime, timeAgo, getInitials, maskAccount
-  │   └── mappers.js              statusLabel, statusPill (CSS class), clearanceLabel
+  │   ├── api.js                THE Axios instance. Isko touch karo toh soch ke.
+  │   ├── formatters.js         Dates, initials, account masking — sab yahan
+  │   └── mappers.js            Status string → readable label / CSS class
   │
   ├── router/
-  │   ├── AppRoutes.jsx           All <Route> definitions
-  │   ├── RequireAdmin.jsx        Admin guard with optional roles[] whitelist
-  │   └── RequireStudent.jsx      Student-only guard
+  │   ├── AppRoutes.jsx         Saare routes yahan registered hain
+  │   ├── RequireAdmin.jsx      "Teri aukat hai yahan aane ki?" — admin guard
+  │   └── RequireStudent.jsx    Student-only bouncer
   │
-  ├── components/
-  │   └── common/
-  │       ├── index.jsx           All shared UI components (see list below)
-  │       └── Sidebar.jsx         Admin navigation sidebar
+  ├── components/common/
+  │   ├── index.jsx             Saare shared UI components — ek file mein sab
+  │   └── Sidebar.jsx           Admin ka navigation sidebar
   │
   └── pages/
       ├── Landing.jsx
-      ├── student/
-      │   ├── StudentAuth.jsx
-      │   ├── StudentDashboard.jsx
-      │   ├── StudentApplication.jsx
-      │   └── StudentStatus.jsx
-      └── admin/
-          ├── AdminLogin.jsx
-          ├── AdminDashboard.jsx
-          ├── AdminApplications.jsx
-          ├── AdminApplicationDetail.jsx
-          ├── AdminClearances.jsx
-          └── AdminRefunds.jsx
+      ├── student/              StudentAuth, Dashboard, Application, Status
+      └── admin/                AdminLogin, Dashboard, Applications,
+                                ApplicationDetail, Clearances, Refunds
 
 --------------------------------------------------------------------------------
-MODULE ALIAS
+MODULE ALIAS — @ Wala Shortcut
 --------------------------------------------------------------------------------
 
-  @ → ./src        (configured in vite.config.js via path.resolve)
+  @ → ./src      (vite.config.js mein path.resolve se set hai)
 
-  Usage:  import { useAuth } from '@/context/AuthContext'
-          import api from '@/utils/api'
+  Sahi tarika:    import { useAuth } from '@/context/AuthContext'
+  Galat tarika:   import { useAuth } from '../../../context/AuthContext'
 
-  Never use relative ../../ paths. All cross-module imports use @/.
+  ../../ waale relative paths mat likho. Kabhi nahi. Sab @/ se shuru karo.
+  Code padhne wale ka dimaag thoda kam kharaab hoga.
 
 --------------------------------------------------------------------------------
-AXIOS INSTANCE  (src/utils/api.js)
+AXIOS INSTANCE — api.js  (Poori App Ka Internet Connection)
 --------------------------------------------------------------------------------
 
   const api = axios.create({
     baseURL: '/api',
-    timeout: 15000,
+    timeout: 15000,                 // 15 second wait, phir give up
     headers: { 'Content-Type': 'application/json' },
   });
 
-  Request interceptor:
-    → Reads iehe_token from localStorage
-    → Injects Authorization: Bearer <token> on every request
+  REQUEST INTERCEPTOR:
+    → localStorage se iehe_token uthata hai
+    → Har request mein Authorization: Bearer <token> thoos deta hai
+    → Token nahi hai? Request jaati hai bina header ke — server rok lega
 
-  Response interceptor:
-    → On 401: clears localStorage, redirects to '/'
-    → All other errors: re-rejected (caller handles)
+  RESPONSE INTERCEPTOR:
+    → 401 aaya? Matlab token expired ya invalid.
+      localStorage saaf, window.location = '/' — seedha ghar.
+      No mercy. No second chance.
+    → Baaki errors? Reject karta hai — caller apna handle kare
 
-  Dev proxy (vite.config.js):
-    /api  →  http://localhost:5000   (changeOrigin: true)
+  DEV PROXY (vite.config.js):
+    /api  →  http://localhost:5000  (changeOrigin: true)
+    Matlab frontend aur backend alag ports pe hain, lekin CORS ka jhanjhat nahi
 
-  In production: Vercel routes /api to the backend deployment URL (set via
-  environment variable or rewrites config — confirm with backend team).
+  PRODUCTION:
+    Vercel pe /api ka seedha backend URL — backend team se confirm karo
+    environment variable mein hai ya rewrites mein — dono possible hain
+
+  RULE: Koi bhi service file seedha axios import nahi karegi.
+        Sirf is api instance ko use karo. Token logic ek baar likhna kaafi hai.
 
 --------------------------------------------------------------------------------
-AUTH FLOW  (src/context/AuthContext.jsx)
+AUTH FLOW — AuthContext.jsx  (Kaun Hai, Kahan Hai)
 --------------------------------------------------------------------------------
 
-  Storage keys (from constants.js):
-    TOKEN_KEY = 'iehe_token'
-    USER_KEY  = 'iehe_user'
+  localStorage mein do cheezein store hoti hain:
+    TOKEN_KEY = 'iehe_token'   ← JWT token (server ne diya tha)
+    USER_KEY  = 'iehe_user'    ← user object JSON (quick access ke liye)
 
-  On app mount:
-    loadUser() → reads TOKEN_KEY from localStorage
-              → if present: calls GET /auth/me
-              → on success: setUser(res.data.user)
-              → on failure: clears both keys
-              → always: setLoading(false)
+  APP MOUNT PE KYA HOTA HAI:
+    loadUser() chalta hai →
+      → localStorage mein token hai? Nahi → loading false, khatam
+      → Hai toh GET /auth/me call karo (token valid hai ki nahi check karo)
+      → Success → setUser(res.data.user) → poori app ko pata chal gaya
+      → Fail → dono keys delete karo, user null rehta hai
+      → Har case mein: setLoading(false) — spinner hatao
 
   login(token, userData):
-    → writes both keys to localStorage
-    → setUser(userData)   ← triggers re-render across all consumers
+    → dono keys localStorage mein save
+    → setUser(userData) → saare consumers re-render ho jaate hain
 
   logout():
-    → removes both keys
-    → setUser(null)
+    → dono keys localStorage se hatao
+    → setUser(null) → poori app ko pata chal jaata hai
 
-  The 401 interceptor in api.js clears storage + redirects without calling
-  AuthContext.logout() — this is intentional: hard redirect resets all state.
+  IMPORTANT NUANCE:
+    api.js ka 401 interceptor localStorage clear karta hai aur hard redirect
+    karta hai — AuthContext.logout() call NAHI karta. Intentional hai yeh.
+    Hard redirect se state automatically reset ho jaati hai. Clean slate.
 
-  useAuth() throws if used outside <AuthProvider>.
+  useAuth() agar <AuthProvider> ke bahar use karo → Error throw karega.
+  Matlab context ke bahar mat use karo, samjhe? Seedha error aayega.
 
 --------------------------------------------------------------------------------
-ROUTE GUARDS
+ROUTE GUARDS — Bouncer System
 --------------------------------------------------------------------------------
 
   RequireStudent:
-    if loading        → <Spinner /> (full viewport)
-    if !user          → <Navigate to="/student/login" />
-    if user.role !== 'student' → <Navigate to="/admin/dashboard" />
-    else              → render children
+    loading?              → Spinner dikhao (full screen, wait karo)
+    user nahi hai?        → /student/login pe bhejo
+    user admin hai?       → /admin/dashboard pe bhejo (galat jagah aa gaye)
+    sab theek?            → children render karo, aao bhai
 
   RequireAdmin({ roles? }):
-    if loading        → <Spinner />
-    if !user          → <Navigate to="/admin/login" />
-    if user.role === 'student' → <Navigate to="/student/dashboard" />
-    if roles && !roles.includes(user.role) → <Navigate to="/admin/dashboard" />
-    else              → render children
+    loading?              → Spinner
+    user nahi?            → /admin/login
+    user student hai?     → /student/dashboard  (teri jagah nahi yeh)
+    roles diya aur role match nahi?  → /admin/dashboard  (permission nahi)
+    sab theek?            → andar aao
 
-  Role strings used in the app:
+  Role strings (yeh exact strings use hoti hain code mein):
     'superadmin' | 'library' | 'sports' | 'hostel' | 'department' | 'accounts' | 'student'
 
-  Routes with role restrictions:
-    /admin/clearances  → roles: ['library','sports','hostel','department','superadmin']
-    /admin/refunds     → roles: ['accounts','superadmin']
-    All other /admin/* → any non-student authenticated user
+  Role-restricted routes:
+    /admin/clearances  → ['library','sports','hostel','department','superadmin']
+    /admin/refunds     → ['accounts','superadmin']  ← sabse restricted
+    Baaki /admin/*     → koi bhi non-student admin
+
+  Superadmin hamesha andar — har roles[] array mein superadmin hai.
+  IT wala bhaiya sab dekh sakta hai.
 
 --------------------------------------------------------------------------------
-API ENDPOINTS  (services layer)
+API ENDPOINTS — Backend Se Kya Maanga Jaata Hai
 --------------------------------------------------------------------------------
 
   authService.js
@@ -169,212 +178,295 @@ API ENDPOINTS  (services layer)
   POST  /auth/student/login       studentLogin(creds)
   POST  /auth/student/register    studentRegister(payload)
   POST  /auth/admin/login         adminLogin(creds)
-  GET   /auth/me                  getMe()
+  GET   /auth/me                  getMe()   ← token validate karo + user lo
 
   applicationService.js
   ─────────────────────
-  GET   /application/my                        getMyApplication()
-  POST  /application/submit                    submitApplication(payload)
-  GET   /application/all                       getAllApplications(params)
-        params: { page, limit:15, search?, status?, department? }
-  GET   /application/:id                       getApplicationById(id)
-  PATCH /application/:id/clearance             updateClearance(id, clearanceType, status, reason)
+  GET   /application/my           getMyApplication()
+        → Student ki apni application, no params needed
+
+  POST  /application/submit       submitApplication(payload)
+        → Nayi application create karo
+
+  GET   /application/all          getAllApplications(params)
+        params: { page, limit: 15, search?, status?, department? }
+        → Paginated list, saare filters optional hain
+
+  GET   /application/:id          getApplicationById(id)
+        → Ek specific application ki poori detail
+
+  PATCH /application/:id/clearance    updateClearance(id, clearanceType, status, reason)
         body: { clearanceType, status, reason }
-        clearanceType: 'library'|'sports'|'hostel'|'department'|'accounts'
-        status: 'cleared'|'hold'|'pending'|'na'
-  PATCH /application/:id/refund                processRefund(id)
-        response includes: { transactionId }
-  GET   /application/stats/dashboard           getDashboardStats()
+        clearanceType: 'library' | 'sports' | 'hostel' | 'department' | 'accounts'
+        status:        'cleared' | 'hold' | 'pending' | 'na'
+        → Ek dept ka clearance status update karo
 
-  Services are thin wrappers — no data transformation, no error handling.
-  All transformation and error handling happens in hooks or page handlers.
+  PATCH /application/:id/refund       processRefund(id)
+        response: { transactionId }   ← yeh toast mein dikhao
+        → Final refund trigger — sirf accounts/superadmin kar sakte hain
+
+  GET   /application/stats/dashboard  getDashboardStats()
+        → Admin dashboard ke KPI numbers
+
+  NIYAM: Services sirf API calls karti hain. Koi data transform nahi,
+         koi error handling nahi. Yeh kaam hooks aur pages ka hai.
+         Services thin raho — ek line, ek call, bas.
 
 --------------------------------------------------------------------------------
-CUSTOM HOOKS — PATTERN
+CUSTOM HOOKS — Data Laane Ka Formula
 --------------------------------------------------------------------------------
 
-  All hooks follow this structure:
-    1. useState for data, loading, (error if needed)
-    2. useCallback-wrapped fetch function (refetch / refresh)
-    3. useEffect that calls refetch() when dependencies change
-    4. Returns data + loading + setters + refetch
+  Har hook ek hi pattern follow karta hai. Yaad kar lo ek baar:
+
+    1. useState → data, loading, (error agar chahiye)
+    2. useCallback → fetch function (refetch / refresh) — dependencies saath
+    3. useEffect → refetch() call karo jab dependencies change hon
+    4. Return → data + loading + setters + refetch
+
+  Ab detail mein:
 
   useMyApplication()
-    Fetches GET /application/my on mount. No params.
-    Returns: { application, loading, refetch }
+    → Mount pe GET /application/my call karta hai, no params
+    → Returns: { application, loading, refetch }
+    → Simple. Seedha. Koi filter nahi.
 
   useApplicationList()
     State: applications[], loading, search, statusFilter, deptFilter, page, total, pages
-    refetch() rebuilds params object from current state, calls getAllApplications()
-    useEffect depends on [search, statusFilter, deptFilter, page] via useCallback
-    Returns all state + setters + refetch
+    → refetch() current state se params banata hai, getAllApplications() call karta hai
+    → useEffect [search, statusFilter, deptFilter, page] pe depend karta hai
+    → Koi bhi filter change karo — refetch automatic
+    → Returns: sab kuch — state, setters, refetch
 
   useApplicationDetail(id)
     State: application, loading, updating
-    refresh() calls getApplicationById(id), on error navigates to /admin/applications
+    → refresh() = getApplicationById(id) call karo
+      agar error aaya → /admin/applications pe navigate (application nahi mili)
+
     updateClearanceStatus(clearanceType, status, reason):
-      → validates reason if status === 'hold'
-      → calls updateClearance(), toasts result, calls refresh()
-      → returns boolean (success/failure)
+      → 'hold' status hai aur reason nahi diya? Toast error, return false
+      → updating = true, call karo, toast result, refresh(), return true/false
+
     triggerRefund():
-      → window.confirm gate
-      → calls processRefund(id), toasts transactionId, calls refresh()
-    Returns: { application, loading, updating, updateClearanceStatus, triggerRefund, refresh }
+      → pehle window.confirm — accident se mat ho jaaye
+      → processRefund(id) call karo
+      → toast mein transactionId dikhao, refresh()
+
+    → Returns: { application, loading, updating, updateClearanceStatus, triggerRefund, refresh }
 
   useDashboardStats()
-    Fetches GET /application/stats/dashboard on mount.
-    Returns: { stats, loading }
+    → Mount pe GET /application/stats/dashboard
+    → Returns: { stats, loading }
+    → Bas itna hi kaam hai iski
 
 --------------------------------------------------------------------------------
-SHARED UI COMPONENTS  (src/components/common/index.jsx)
+SHARED COMPONENTS — common/index.jsx  (Sab Ek Hi File Mein)
 --------------------------------------------------------------------------------
 
-  All exported as named exports from a single file.
+  Sab named exports hain ek file se. Import seedha karo.
 
-  Spinner({ text })              Loading indicator with spinner + label
-  Alert({ type, children })      type: 'info'|'success'|'warning'|'danger'
-  StatusPill({ status })         Maps status string → CSS class via statusPill()
-  ClearanceCard({ type, data })  Dept clearance display with icon, pill, reason, updatedByName
-  KpiCard({ icon, value, label, color, sub })   Dashboard metric card
+  Spinner({ text })
+    → Loading dikhao — text default "Loading…" hai
+
+  Alert({ type, children })
+    → type: 'info' | 'success' | 'warning' | 'danger'
+    → Automatically sahi emoji laata hai saath mein
+
+  StatusPill({ status })
+    → status string lo → statusPill() se CSS class lo → render karo
+    → Style sab index.css mein define hai
+
+  ClearanceCard({ type, data })
+    → type = 'library'/'sports'/etc., data = clearance object from server
+    → Icon, status pill, reason (agar on hold hai), updatedByName sab dikhata hai
+
+  KpiCard({ icon, value, label, color, sub })
+    → Admin dashboard ke bade numbers wale cards
+    → color prop se background theme change hoti hai
+
   Modal({ open, onClose, title, subtitle, children })
-                                 Overlay modal; clicks outside calls onClose
-  InfoRow({ label, value, mono }) Label-value pair row
-  Timeline({ events[] })         events: { event, timestamp, description?, performedBy? }
-  StepProgress({ steps[], current })   Numbered step indicator; done/active/pending states
-  EmptyState({ icon, title, desc, action })   No-data placeholder
-  Field({ label, error, children, dark })   Form field wrapper with error display
+    → open false ho toh null return — render hi nahi hota
+    → Bahar click karo → onClose call — yeh check karta hai e.target === e.currentTarget
+
+  InfoRow({ label, value, mono })
+    → Label: Value format ka ek row
+    → mono = true toh monospace font — account numbers ke liye useful
+
+  Timeline({ events[] })
+    → events: { event, timestamp, description?, performedBy? }
+    → Application ka history dikhata hai step by step
+
+  StepProgress({ steps[], current })
+    → Numbered steps — done (checkmark), active (highlighted), pending (number)
+    → current = step number, 1-indexed
+
+  EmptyState({ icon, title, desc, action })
+    → Jab koi data nahi ho toh yeh dikhao
+    → action prop mein button ya link de sakte ho
+
+  Field({ label, error, children, dark })
+    → Form fields ke liye wrapper
+    → error prop doge toh neeche red text mein dikhayega
 
 --------------------------------------------------------------------------------
-MAPPERS & FORMATTERS
+MAPPERS & FORMATTERS — Chote Lekin Zaroori
 --------------------------------------------------------------------------------
 
-  mappers.js
+  mappers.js — Status ko human-readable banao
   ──────────
-  statusLabel(s)    → human readable application status string
-  statusPill(s)     → CSS class string ('pill-submitted', 'pill-review', etc.)
-  clearanceLabel(s) → human readable clearance status ('Awaiting Review', 'Cleared ✓', etc.)
+  statusLabel(s)     → 'under_review' → 'Under Review'
+  statusPill(s)      → 'under_review' → 'pill-review'  (CSS class)
+  clearanceLabel(s)  → 'pending' → 'Awaiting Review', 'cleared' → 'Cleared ✓'
 
-  formatters.js
+  formatters.js — Dates aur strings ko presentable banao
   ─────────────
-  formatDate(d)       → "26 Mar 2026"
-  formatDateTime(d)   → "26 Mar 2026, 10:30 AM"
-  timeAgo(d)          → "2 hours ago"
-  getInitials(name)   → "AB" from "Alice Brown"
-  maskAccount(num)    → "****1234"   (last 4 digits visible)
+  formatDate(d)        → "26 Mar 2026"
+  formatDateTime(d)    → "26 Mar 2026, 10:30 AM"
+  timeAgo(d)           → "2 hours ago"   ← relative time
+  getInitials(name)    → "Alice Brown" → "AB"   (avatar ke liye)
+  maskAccount(num)     → "****1234"   (bank account, security ke liye)
 
 --------------------------------------------------------------------------------
-CONSTANTS  (src/config/constants.js)
+CONSTANTS — config/constants.js  (Ek Jagah Sab Kuch)
 --------------------------------------------------------------------------------
 
-  REFUND_AMOUNT         5000
-  REFUND_AMOUNT_DISPLAY '₹5,000'
-  PASSOUT_YEARS         [2026..2020]
-  DEPARTMENTS           ['CSE','IT','ECE','ME','CE','EE','MCA','MBA','Other']
+  REFUND_AMOUNT          5000
+  REFUND_AMOUNT_DISPLAY  '₹5,000'      ← display ke liye, raw number nahi
+  PASSOUT_YEARS          [2026..2020]
+  DEPARTMENTS            ['CSE','IT','ECE','ME','CE','EE','MCA','MBA','Other']
 
-  ROLE_LABELS / ROLE_ICONS / DEPT_ICONS   display mappings for admin UI
+  ROLE_LABELS            role → readable name  (e.g. 'library' → 'Library Department')
+  ROLE_ICONS             role → emoji
+  DEPT_ICONS             clearance type → emoji
 
-  CLEARANCE_ROLES       ['library','sports','hostel','department']
-  REFUND_ROLES          ['accounts','superadmin']
+  CLEARANCE_ROLES        ['library','sports','hostel','department']
+                         → yeh 4 clear karein toh fully_cleared milta hai
+  REFUND_ROLES           ['accounts','superadmin']
+                         → sirf yeh log refund process kar sakte hain
 
-  CLEARANCE_ROLE_MAP    maps each clearance type → which roles can update it
+  CLEARANCE_ROLE_MAP     har clearance type → kaun update kar sakta hai
     { library: ['library','superadmin'], sports: ['sports','superadmin'], ... }
+    → Superadmin sab mein hai. IT wala sabka baap.
 
-  STATUS_OPTS           array of { value, label } for filter dropdowns
+  STATUS_OPTS            dropdown ke liye { value, label } array
 
-  APPLICATION_STATUS_STEPS   maps status string → step number (1–4)
-    submitted/under_review/on_hold → 2
-    fully_cleared → 3
-    refund_processed → 4
+  APPLICATION_STATUS_STEPS   status → step number (StepProgress ke liye)
+    submitted / under_review / on_hold  → step 2
+    fully_cleared                       → step 3
+    refund_processed                    → step 4   ← goal yahi hai
 
-  TOKEN_KEY             'iehe_token'
-  USER_KEY              'iehe_user'
+  TOKEN_KEY  'iehe_token'
+  USER_KEY   'iehe_user'
 
 --------------------------------------------------------------------------------
-APPLICATION STATUS STATE MACHINE
+APPLICATION STATUS — State Machine  (Zindagi Ka Safar)
 --------------------------------------------------------------------------------
 
   submitted
-      ↓  (admin views it)
+      ↓  (koi admin ne dekha)
   under_review
-      ↓  (some depts clear, others pending)
+      ↓  (kuch clear hue, kuch pending)
   partially_cleared
-      ↓  (all 4 non-accounts depts clear)
+      ↓  (library + sports + hostel + department — chaaron clear)
   fully_cleared
-      ↓  (accounts processes refund)
-  refund_processed
+      ↓  (accounts ne process kiya)
+  refund_processed   ← GOAL. Paisa aaya. Student khush.
 
-  Parallel state at any point:
-  on_hold  ←  any dept puts clearance on hold
+  Kahin bhi, kabhi bhi:
+  on_hold  ← koi bhi dept hold maar de toh student ka status yeh
 
-  Status transitions are driven entirely by the backend.
-  Frontend reads status and renders accordingly.
-
-  Clearance statuses per department (independent per dept):
-    pending → cleared | hold | na
+  IMPORTANT:
+  → Status transitions sirf backend karta hai. Frontend sirf padhta hai.
+  → Frontend kabhi status seedha nahi badhata — server ki marzi chalti hai.
+  → Har dept ka clearance independent hai:
+      pending  →  cleared  |  hold  |  na
 
 --------------------------------------------------------------------------------
-APP.JSX PROVIDER TREE
+APP.JSX — Provider Tree  (Sab Ka Baap)
 --------------------------------------------------------------------------------
 
-  <BrowserRouter>                ← enables useNavigate, useParams, etc.
-    <AuthProvider>               ← provides useAuth() to all children
-      <AppRoutes />              ← all route definitions
-      <Toaster ... />            ← global toast renderer (position: top-center)
+  <BrowserRouter>            ← useNavigate, useParams, useLocation — sab milta hai
+    <AuthProvider>           ← useAuth() poori app mein available
+      <AppRoutes />          ← saare routes yahan register hain
+      <Toaster ... />        ← global toast — koi bhi page se toast.success() chalao
     </AuthProvider>
   </BrowserRouter>
 
-  Toaster config:
+  Toaster config (agar badhana ho toh App.jsx mein):
+    position: "top-center"
     duration: 4000ms
     fontFamily: DM Sans, fontSize: 14, borderRadius: 12
-    success icon primary: #c9a84c (gold), secondary: #0a1628 (dark navy)
+    success primary color: #c9a84c (woh gold wala)
+    success secondary: #0a1628 (dark navy background)
 
 --------------------------------------------------------------------------------
-VITE CONFIG SUMMARY
+VITE CONFIG — Dev Setup
 --------------------------------------------------------------------------------
 
-  plugins:    [@vitejs/plugin-react]
-  alias:      @ → ./src
-  server.port: 5173
+  plugins:      [@vitejs/plugin-react]  ← JSX transform + fast refresh
+  alias:        @ → ./src              ← already cover kar liya upar
+  server.port:  5173
   server.proxy:
-    /api → http://localhost:5000   (changeOrigin: true)
+    '/api' → 'http://localhost:5000'  (changeOrigin: true)
+    → CORS nahi aayega development mein isliye
+    → Production mein yeh proxy nahi hota — backend ka actual URL lagta hai
 
 --------------------------------------------------------------------------------
-VERCEL DEPLOYMENT
+VERCEL DEPLOYMENT — SPA Ka Ek Zaruri Jugaad
 --------------------------------------------------------------------------------
 
-  vercel.json sets a catch-all rewrite:
+  vercel.json mein yeh rewrite hai:
     source: "/(.*)"  →  destination: "/index.html"
 
-  This is required for SPA client-side routing. Without it, a direct
-  browser request to /student/dashboard returns a 404 from Vercel.
+  Kyun?
+  → Browser seedha /student/dashboard request kare toh Vercel sochta hai
+    "yeh koi file hai" — dhundhta hai — nahi milti — 404 de deta hai.
+  → Is rewrite se sab kuch index.html pe jaata hai aur React Router
+    apna routing handle karta hai. SPA ke liye yeh mandatory hai.
+  → Yeh mat lagao toh production pe sirf / kaam karega.
+    Refresh maaro kahin aur pe — boom, 404. Production mein bahut bura lagta hai.
 
 --------------------------------------------------------------------------------
-STYLING APPROACH
+STYLING — CSS Ka Scene
 --------------------------------------------------------------------------------
 
-  Plain CSS in src/index.css — no CSS modules, no Tailwind, no CSS-in-JS.
-  CSS custom properties (--gold, --muted, --dark, etc.) defined on :root.
-  Component classes are BEM-lite: .pill, .pill-submitted, .kpi-card, .ci-icon.
-  Inline styles used sparingly for one-off layout adjustments only.
+  Plain CSS — src/index.css mein sab kuch.
+  No Tailwind. No CSS Modules. No styled-components. No kuch fancy.
+
+  CSS custom properties :root pe defined hain:
+    --gold, --muted, --dark, --surface, etc.
+    → Color change karna ho toh ek jagah badlo, sab jagah update
+
+  Classes BEM-lite style mein:
+    .pill, .pill-submitted, .pill-review
+    .kpi-card, .kpi-icon, .kpi-val
+    .ci-icon, .ci-dept, .ci-reason  (clearance card ke andar)
+
+  Inline styles? Sirf tab jab ek baar ka kaam ho.
+  Koi naya class mat banao ek line ke liye — isliye inline sahi hai wahan.
 
 --------------------------------------------------------------------------------
-ADDING A NEW PAGE — CHECKLIST
+NAYA PAGE BANANA HAI? — Checklist
 --------------------------------------------------------------------------------
 
-  1. Create file in src/pages/student/ or src/pages/admin/
-  2. If it needs data: create a hook in src/hooks/ using the established pattern
-  3. If it needs new API calls: add exports to the appropriate service file
-  4. Register the route in src/router/AppRoutes.jsx
-  5. Wrap with <RequireStudent> or <RequireAdmin roles={[...]}>
-  6. If admin: add nav link in src/components/common/Sidebar.jsx
+  1. File banao → src/pages/student/ ya src/pages/admin/ mein
+  2. Data chahiye? → src/hooks/ mein hook banao, established pattern follow karo
+  3. Naya API call chahiye? → service file mein named export daalo
+  4. Route register karo → src/router/AppRoutes.jsx mein
+  5. Guard lagao → <RequireStudent> ya <RequireAdmin roles={[...]}>
+  6. Admin page hai? → Sidebar.jsx mein nav link daalo
+
+  Itna hi. Koi aur jagah nahi chhuni chahiye normally.
 
 --------------------------------------------------------------------------------
-ADDING A NEW API CALL — CHECKLIST
+NAYA API CALL BANANA HAI? — Checklist
 --------------------------------------------------------------------------------
 
-  1. Add a named export to the relevant service file (authService or applicationService)
-     → import api from '@/utils/api'  (never import axios directly in services)
-  2. Use the export inside a hook or page handler — never call services from other services
-  3. The api instance handles auth header and 401 globally — do not duplicate that logic
+  1. authService.js ya applicationService.js mein named export daalo
+     → import api from '@/utils/api'  ← yahi use karo
+     → import axios from 'axios' NAHI karna — kabhi nahi — ever
+  2. Us export ko hook ya page handler mein use karo
+  3. Ek service doosri service ko call nahi karti — flat structure rakho
+  4. Token, 401, baseURL — sab api.js handle kar raha hai
+     → Yeh logic dobara mat likho — ek jagah hai, wahi rehne do
 
 ================================================================================

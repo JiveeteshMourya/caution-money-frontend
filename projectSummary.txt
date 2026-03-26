@@ -1,234 +1,262 @@
 ================================================================================
   CAUTION MONEY REFUND PORTAL — Frontend Project Summary
+  (Padh le bhai, kaam aayega)
 ================================================================================
 
 --------------------------------------------------------------------------------
-WHAT IS THIS APP?
+YEH APP HAI KYA BHAI?
 --------------------------------------------------------------------------------
 
-This is a web app for a college (IEHE) that helps students get their "caution
-money" refunded when they graduate. Caution money is a security deposit
-(₹5,000) that students pay when they join the college. This app makes the
-refund process fully digital — no paperwork, no running around departments.
+Toh basically — college mein join karte waqt ₹5,000 jama karte ho na?
+Woh "caution money" hota hai. Ek tarah ka hostage money hai tumhara, college
+ke paas. Jab graduation hoti hai, toh woh paisa wapas milna chahiye.
 
-Without this app, a student would have to:
-  - Visit the library, sports room, hostel, and every department in person
-  - Get a physical "no dues" stamp from each
-  - Then go to accounts to get the refund
+Lekin pehle kya hota tha?
 
-With this app:
-  - Student submits one online application
-  - Each department staff logs in, reviews, and clicks "Approve"
-  - Once all departments clear, accounts can process the refund
-  - Student can track everything from their dashboard
+  - Library jaao, stamp lo
+  - Sports room jaao, stamp lo
+  - Hostel warden ke paas jaao, unhe dhundo pehle
+  - Department ke HOD ko pakdo
+  - Accounts mein line mein khade raho
+  - Ek mahine baad: "Form galat bhara tha, dubara aao"
 
---------------------------------------------------------------------------------
-WHO USES IT?
---------------------------------------------------------------------------------
+Sab drama. Sab chakkar. Zero paisa.
 
-Two types of users:
+Ab kya hota hai is app se?
 
-  1. STUDENTS
-     - Register with their enrollment number and details
-     - Submit a refund application with their bank account info
-     - Track which departments have cleared them
-     - See when their refund is processed
+  - Online form bharo
+  - Har department wala apne laptop se approve karta hai
+  - Accounts process karta hai
+  - Paisa aata hai
+  - Tu ghar pe baitha Netflix dekh raha hai
 
-  2. ADMIN STAFF (different roles for different departments)
-     - Library staff   → approve library clearance
-     - Sports staff    → approve sports clearance
-     - Hostel staff    → approve hostel clearance
-     - Department HOD  → approve academic department clearance
-     - Accounts staff  → process the final refund once all clearances are done
-     - Superadmin      → can do everything, see all stats
+Yahi hai yeh app. Simple. Seedha. No nautanki.
 
 --------------------------------------------------------------------------------
-HOW DOES THE APP FLOW (LOGICAL STEPS)?
+KON USE KARTA HAI? (The Cast)
 --------------------------------------------------------------------------------
 
-Step 1: Student Registers
-  → Goes to /student/login → fills registration form → account created
+  1. STUDENTS (The Heroes / Victims)
+     - Register karo, application bharo, bank details dalo
+     - Phir bas track karte raho — kaun clear hua, kaun pending hai
+     - Jab sab ho jaaye, status page pe "Refund Processed" dekho
+       aur ek choti si khushi feel karo
 
-Step 2: Student Submits Application
-  → Fills in personal details + bank account number → clicks Submit
-
-Step 3: Application Goes Through Departments
-  → Each department admin logs in and sees applications assigned to them
-  → They can either CLEAR it or put it ON HOLD (if there's an issue)
-  → There are 5 departments: Library, Sports, Hostel, Academic Dept, Accounts
-
-Step 4: Full Clearance
-  → Once all departments (except Accounts) have cleared → status becomes
-    "Fully Cleared"
-
-Step 5: Accounts Processes the Refund
-  → Accounts staff logs in, sees fully cleared applications, clicks "Process"
-  → Status becomes "Refund Processed" — student gets notified via status page
-
-Step 6: Student Sees Final Status
-  → Student logs in, visits their dashboard or status page, sees "Refunded"
+  2. ADMIN WALE (The Gatekeepers)
+     - Library staff   → library clearance approve karo
+     - Sports staff    → sports clearance (probably sabse fast, koi dues nahi hote)
+     - Hostel warden   → hostel clearance (sabse suspicious wale)
+     - Department HOD  → academic clearance
+     - Accounts staff  → final boss — yeh approve kare toh paisa aaye
+     - Superadmin      → God mode. Sab kuch dekh sakta hai, sab kuch kar sakta hai.
+                         Basically IT wala bhaiya.
 
 --------------------------------------------------------------------------------
-PAGES IN THE APP
+APP KA FLOW — STEP BY STEP (Ek Baar Samjho)
 --------------------------------------------------------------------------------
 
-PUBLIC (anyone can see):
-  - Landing Page (/)           → intro to the portal, links to login
+Step 1: Register karo
+  → /student/login pe jaao → form bharo → account ban gaya → done
 
-STUDENT PAGES (only logged-in students):
-  - Student Login/Register     → sign up or sign in
-  - Student Dashboard          → see your current status + which depts cleared
-  - Student Application        → fill/edit your refund application form
-  - Student Status             → track your refund with a step timeline
+Step 2: Application Submit karo
+  → Apni details + bank account number daalo → Submit maaro
+  → Ab baksh do khud ko, baaki system karega
 
-ADMIN PAGES (only logged-in admin staff):
-  - Admin Login                → separate login for staff
-  - Admin Dashboard            → see stats: how many apps, how many cleared etc.
-  - Admin Applications (list)  → search and filter all student applications
-  - Admin Application (detail) → view one application, take action on it
-  - Admin Clearances           → dept-specific: approve/hold clearances
-  - Admin Refunds              → accounts-only: process final refunds
+Step 3: Departments mein chakkar
+  → Har department wala apni screen pe dekh raha hai teri application
+  → Wo ya toh "Cleared" maarte hain ya "On Hold" (matlab kuch gadbad hai)
+  → 5 departments hain: Library, Sports, Hostel, Dept, Accounts
 
---------------------------------------------------------------------------------
-FOLDER STRUCTURE (SIMPLIFIED)
---------------------------------------------------------------------------------
+Step 4: Sab clear ho gaye
+  → Pehle 4 departments clear kar dein → status banta hai "Fully Cleared"
+  → Ab accounts ka wait karo
 
-src/
-  pages/         → all the screens/pages of the app
-    student/     → student-facing pages
-    admin/       → admin-facing pages
+Step 5: Accounts wala process karta hai
+  → Accounts login karta hai, button dabata hai, transaction ID generate hoti hai
+  → Status: "Refund Processed" ✓
 
-  components/    → reusable building blocks (buttons, cards, modals, etc.)
-    common/      → things used across many pages (like a status badge)
-
-  services/      → functions that talk to the backend server (API calls)
-  hooks/         → reusable logic for fetching and managing data
-  context/       → global state shared across the whole app (e.g. who is logged in)
-  router/        → controls which page shows for which URL
-  config/        → constants like department names, status labels, amounts
-  utils/         → small helper functions (format a date, mask bank account, etc.)
+Step 6: Tu khush
+  → Dashboard kholo → dekho → paisa aaya ya nahi woh toh bank batayega
+  → App ka kaam ho gaya
 
 --------------------------------------------------------------------------------
-LIBRARIES USED AND WHY
+PAGES — KYA KAHAN HAI
 --------------------------------------------------------------------------------
 
-REACT (react, react-dom)
-  What: The main library for building the UI
-  Why:  React lets us break the app into small reusable pieces (components).
-        Instead of writing one giant HTML page, we write small components like
-        <StudentDashboard />, <ClearanceCard />, <KpiCard /> and compose them.
+PUBLIC (koi bhi dekh sakta hai, login ki zarurat nahi):
+  - Landing Page (/)      → "Welcome to the portal" wala intro page
+                            Agar pehle se logged in ho toh seedha dashboard
+
+STUDENT KE PAGES (sirf logged-in students):
+  - Login/Register page   → nayi life shuru karo
+  - Student Dashboard     → main hub — status, clearances, sab kuch ek jagah
+  - Student Application   → form bharo / edit karo
+  - Student Status        → step-by-step timeline — kahan tak pahuncha refund
+
+ADMIN KE PAGES (staff wale log):
+  - Admin Login           → alag login, student wala nahi chalega
+  - Admin Dashboard       → numbers dekho — kitne applications, kitne clear, etc.
+  - Admin Applications    → poori list, search kar sakte ho, filter kar sakte ho
+  - Application Detail    → ek student ki poori application, action lo
+  - Admin Clearances      → apne department ki clearances approve/hold karo
+  - Admin Refunds         → sirf accounts + superadmin ke liye, final processing
+
+--------------------------------------------------------------------------------
+FOLDERS KA SCENE (Ghar ka structure)
+--------------------------------------------------------------------------------
+
+src/ ke andar yeh hain:
+
+  pages/         → Jo pages dikhte hain screen pe, woh sab yahan
+    student/     → Student wale pages
+    admin/       → Admin wale pages
+
+  components/    → Chhote chhote reusable cheezein — buttons, cards, modals
+    common/      → Jo cheezein kai pages pe use hoti hain (jaise status badge)
+
+  services/      → Yeh files backend se baat karti hain (API calls)
+                   "Bhai server, yeh data de" — yahi kaam inका
+
+  hooks/         → Data lao, manage karo — reusable logic
+                   Page sirf display karta hai, hook data laata hai
+
+  context/       → Global variable jaisi cheez — "kaun logged in hai?"
+                   Poori app isko read kar sakti hai
+
+  router/        → Kaun sa URL pe kaun sa page dikhega, yeh decide karta hai
+                   + Protected routes: "Teri aukat hai is page pe jaane ki?"
+
+  config/        → Hardcoded values — department names, status labels, amounts
+                   Ek jagah change karo, poori app mein change ho jaata hai
+
+  utils/         → Chote helper functions — date format karo, account mask karo
+
+--------------------------------------------------------------------------------
+LIBRARIES — KYA USE KI AUR KYU (The Squad)
+--------------------------------------------------------------------------------
+
+REACT
+  Kya hai:  UI banane ki main library
+  Kyun:     Poori app ko chhote chhote "components" mein todta hai.
+            Ek <ClearanceCard /> component likho, kahin bhi use karo.
+            Ek giant HTML file mein sab likhne ki zarurat nahi.
+            Basically LEGO blocks hai, HTML nahi.
 
 REACT ROUTER DOM
-  What: Handles navigation between pages without reloading the browser
-  Why:  When a student clicks "Go to Dashboard", we don't reload the page — we
-        just swap out what's shown. This makes the app feel fast and smooth.
-        It also lets us protect pages: /admin/dashboard only works if you're
-        an admin. Otherwise it redirects you.
+  Kya hai:  Page navigation bina browser reload ke
+  Kyun:     Jab tu "Dashboard" pe click karta hai, page reload nahi hota.
+            Sirf content swap hota hai — isliye app fast lagti hai.
+            Aur protected routes: agar tu admin nahi hai toh
+            /admin/dashboard pe jaane ki koshish karo — seedha kick out.
 
 AXIOS
-  What: Used to make HTTP requests to the backend server
-  Why:  This is how the app talks to the database. When a student submits an
-        application, axios sends that data to the server. When the page loads,
-        axios fetches the latest data. We set it up to automatically add the
-        login token to every request so the server knows who is asking.
+  Kya hai:  Backend se baat karne ka tool (HTTP requests)
+  Kyun:     Jab application submit hoti hai, axios woh data server ko bhejta hai.
+            Jab page load hota hai, axios server se fresh data laata hai.
+            Aur ek baar setup karo — automatically login token lagate rehta hai
+            har request mein. Manual kaam nahi.
 
 DATE-FNS
-  What: A library for formatting and working with dates
-  Why:  Dates from the server come in a raw format like "2026-03-26T10:30:00Z".
-        date-fns helps us show it nicely as "26 Mar 2026, 10:30 AM" or "2 hours
-        ago". Much easier than writing that logic ourselves.
+  Kya hai:  Dates ke saath kaam karne ki library
+  Kyun:     Server se date aati hai aise: "2026-03-26T10:30:00Z"
+            Yeh library ise aise dikhata hai: "26 Mar 2026, 10:30 AM"
+            Ya "2 hours ago". Yeh logic khud likhna padta toh rona aata.
 
 REACT HOT TOAST
-  What: Shows small popup notifications (toasts)
-  Why:  After an action like "Application submitted" or "Clearance approved",
-        the user needs quick feedback. This library shows a small toast message
-        at the top of the screen automatically.
+  Kya hai:  Wo chhoti popup notification jo screen ke upar aati hai
+  Kyun:     "Application submitted!" ya "Clearance approved!" — user ko
+            instant feedback chahiye. Yeh library automatically
+            ek toast dikhata hai. Blink karo, gaayab.
 
 REACT ICONS
-  What: A collection of ready-to-use icons
-  Why:  Instead of downloading and managing image files for icons, this library
-        gives us hundreds of icons we can drop in as components. Used for
-        department icons, status icons, nav icons etc.
+  Kya hai:  Ready-made icons ka bhandaar
+  Kyun:     Image files download karne ki zarurat nahi. Bas import karo
+            aur <FiBook /> ya <FiCheckCircle /> likh do. Hundreds of icons,
+            zero headache.
 
 VITE
-  What: The tool that builds and runs the project during development
-  Why:  Vite starts a local development server (localhost:5173) and compiles
-        the React code into regular HTML/CSS/JS that browsers understand.
-        It's much faster than older tools like Create React App.
+  Kya hai:  Development server + build tool
+  Kyun:     localhost:5173 pe app chalaata hai. React ka code jo hum likhte hain
+            woh browser directly nahi samajhta — Vite usse compile karta hai.
+            Create React App se kaafi fast hai. Jab save karo, 0.1 second mein
+            browser update hota hai. No cap.
 
 --------------------------------------------------------------------------------
-HOW LOGIN AND SECURITY WORKS
+LOGIN AUR SECURITY — THODA SAMJHO
 --------------------------------------------------------------------------------
 
-When a user logs in:
-  → Server returns a "token" (a long string that proves you're logged in)
-  → The app saves this token in the browser (localStorage)
-  → Every API request automatically sends this token so the server trusts it
-  → If the token expires or is invalid, the app logs you out and sends you home
+Jab login karo:
+  → Server ek "token" deta hai — ek lamba string, jaise ID card
+  → App ise browser ke localStorage mein save kar leta hai
+  → Har API request ke saath yeh token automatically jaata hai
+  → Server dekhta hai: "Haan, yeh banda authorized hai"
+  → Agar token expire ho gaya ya invalid hai → app seedha logout kar deta hai
+    aur home page pe bhej deta hai. No mercy.
 
-The app keeps track of "who is logged in" using something called AuthContext.
-This is like a global variable that any page can read: "Is someone logged in?
-Are they a student or an admin? What's their name?"
+AuthContext — Yeh kya hai?
+  → Ek global "kaun logged in hai" wali cheez
+  → Koi bhi page ise padh sakta hai: user kaun hai, role kya hai, loading hai ya nahi
+  → Ek baar login karo, poori app ko pata chal jaata hai
 
-Page protection works like this:
-  → Student tries to visit /admin/dashboard
-  → RequireAdmin component checks: are you an admin? No? → redirect to login
-  → Same for admin trying to visit student pages
+Protected Routes:
+  → Student /admin/dashboard pe jaane ki koshish kare → BOUNCE
+  → Admin /student/dashboard pe jaaye → BOUNCE
+  → Library staff /admin/refunds pe jaaye → BOUNCE (sirf accounts + superadmin)
+  → Sab apni-apni lane mein rehte hain
 
 --------------------------------------------------------------------------------
-HOW DATA IS FETCHED (HOOKS)
+DATA KAISE AATA HAI — HOOKS KA SCENE
 --------------------------------------------------------------------------------
 
-Instead of writing data-fetching code directly inside each page, we have
-custom hooks. Think of hooks as reusable question-askers:
+Har page apna data khud nahi fetch karta. Kaam hooks karte hain.
+Hooks = reusable data fetchers. Ek baar likho, kahin bhi use karo.
 
-  useMyApplication()    → "Give me the current student's application"
-  useApplicationList()  → "Give me all applications (with filters & search)"
-  useDashboardStats()   → "Give me the numbers for the admin dashboard"
-  useApplicationDetail()→ "Give me details of one specific application"
+  useMyApplication()     → "Meri application de"
+  useApplicationList()   → "Saari applications de, filter ke saath"
+  useDashboardStats()    → "Admin ke numbers de"
+  useApplicationDetail() → "Is specific application ki poori detail de"
 
-A page just calls the hook:
+Page bas itna karta hai:
   const { application, loading } = useMyApplication()
 
-And the hook handles fetching, loading state, errors — all of it.
-The page just focuses on displaying the data.
+Baaki sab hook handle karta hai — data fetch karo, loading dikhao, error lo.
+Page sirf render karta hai. Clean division of responsibility.
 
 --------------------------------------------------------------------------------
-HOW THE BACKEND IS CONNECTED
+BACKEND SE KAISE BAAT HOTI HAI
 --------------------------------------------------------------------------------
 
-All API requests go to /api/... on the same server.
-In development, this is forwarded (proxied) to http://localhost:5000
-which is where the backend server runs.
+Sab API calls /api/... pe jaati hain.
+Development mein: yeh localhost:5000 pe forward hota hai (Vite ka proxy)
+Production mein: Vercel pe deploy hai, backend URL environment variable se aata hai
 
-In production (deployed to Vercel), the backend URL is set as an environment
-variable and the frontend talks to it directly.
+Ek single Axios instance hai (utils/api.js) jo:
+  → Base URL set karta hai
+  → Automatically token lagata hai har request mein
+  → 401 error aaye toh khud logout karke ghar bhej deta hai
 
-All backend calls go through one Axios instance (utils/api.js) which:
-  - Sets the base URL
-  - Attaches the login token automatically
-  - Handles 401 (not authorized) errors globally
-
---------------------------------------------------------------------------------
-DEPLOYMENT
---------------------------------------------------------------------------------
-
-The app is deployed on Vercel (a free hosting platform for web apps).
-Because this is a "Single Page App" (SPA), all URLs like /student/dashboard
-must be redirected to index.html and React handles the routing.
-The vercel.json file sets this up.
+Koi bhi service file seedha axios use nahi karti — sirf is instance ko use karti hai.
+Isliye token logic ek hi jagah hai, baar baar nahi likhna.
 
 --------------------------------------------------------------------------------
-SUMMARY IN ONE PARAGRAPH
+DEPLOYMENT — APP KAHAAN JAATI HAI
 --------------------------------------------------------------------------------
 
-This is a React web application that digitizes the caution money refund
-process for college students. Students register, submit an application, and
-track their refund status online. Admin staff from different departments log in
-with role-specific access to approve clearances. Once all departments clear a
-student, the accounts team processes the refund. The app is built with React
-for the UI, React Router for navigation, Axios for server communication,
-and a clean folder structure separating pages, services, hooks, and components.
-It's deployed on Vercel.
+App Vercel pe deploy hai — free hosting, ek push mein live.
+
+Ek cheez important: yeh "Single Page App" hai. Matlab browser /student/dashboard
+seedha khole toh Vercel confuse ho jaata — "yeh file kahan hai?"
+vercel.json mein ek rewrite rule hai jo sab URLs ko index.html pe bhejti hai
+aur React apna routing handle karta hai. Without this — 404 milta. Iska dhyan rakhna.
+
+--------------------------------------------------------------------------------
+EK LINE MEIN SUMMARY (Copy-Paste ke liye)
+--------------------------------------------------------------------------------
+
+IEHE ka caution money refund portal — React + Vite se bana, students ka ₹5,000
+wapas dilata hai bina ek bhi chakkar lagaye, departments ke roles ke saath
+protected routing, custom hooks se data fetch, aur Vercel pe deploy.
+
+Seedha, clean, kaam ka.
 
 ================================================================================
