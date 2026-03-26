@@ -1,52 +1,28 @@
-import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Sidebar, Topbar } from '../../components/common/Sidebar';
-import { Spinner, EmptyState } from '../../components/common';
-import { formatDate, statusLabel, statusPill, DEPARTMENTS } from '../../utils/helpers';
-import api from '../../utils/api';
-
-const STATUS_OPTS = [
-  { value: '', label: 'All Statuses' },
-  { value: 'submitted', label: 'Submitted' },
-  { value: 'under_review', label: 'Under Review' },
-  { value: 'partially_cleared', label: 'Partial Clearance' },
-  { value: 'fully_cleared', label: 'Fully Cleared' },
-  { value: 'refund_processed', label: 'Refund Processed' },
-  { value: 'on_hold', label: 'On Hold' },
-];
+import { Sidebar, Topbar } from '@/components/common/Sidebar';
+import { Spinner, EmptyState } from '@/components/common';
+import { formatDate } from '@/utils/formatters';
+import { statusLabel, statusPill } from '@/utils/mappers';
+import { useApplicationList } from '@/hooks/useApplicationList';
+import { STATUS_OPTS, DEPARTMENTS } from '@/config/constants';
 
 export default function AdminApplications() {
   const navigate = useNavigate();
-  const [apps, setApps] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState('');
-  const [statusF, setStatusF] = useState('');
-  const [deptF, setDeptF] = useState('');
-  const [page, setPage] = useState(1);
-  const [total, setTotal] = useState(0);
-  const [pages, setPages] = useState(1);
-
-  const fetchApps = useCallback(async () => {
-    setLoading(true);
-    try {
-      const params = new URLSearchParams({ page, limit: 15 });
-      if (search) params.set('search', search);
-      if (statusF) params.set('status', statusF);
-      if (deptF) params.set('department', deptF);
-      const r = await api.get(`/application/all?${params}`);
-      setApps(r.data.applications);
-      setTotal(r.data.total);
-      setPages(r.data.pages);
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setLoading(false);
-    }
-  }, [search, statusF, deptF, page]);
-
-  useEffect(() => {
-    fetchApps();
-  }, [fetchApps]);
+  const {
+    applications: apps,
+    loading,
+    total,
+    pages,
+    page,
+    setPage,
+    search,
+    setSearch,
+    statusFilter: statusF,
+    setStatusFilter: setStatusF,
+    deptFilter: deptF,
+    setDeptFilter: setDeptF,
+    refetch: fetchApps,
+  } = useApplicationList();
 
   const clearanceBar = app => {
     const types = ['library', 'sports', 'department', 'accounts'];

@@ -1,6 +1,7 @@
 import { NavLink, useNavigate } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
-import { getInitials, ROLE_LABELS } from '../../utils/helpers';
+import { useAuth } from '@/context/AuthContext';
+import { getInitials } from '@/utils/formatters';
+import { ROLE_LABELS } from '@/config/constants';
 
 const StudentSidebar = ({ user }) => {
   const links = [
@@ -47,7 +48,6 @@ const AdminSidebar = ({ user }) => {
       roles: ['library', 'sports', 'hostel', 'department'],
     },
     { to: '/admin/refunds', icon: '💰', label: 'Refund Queue', roles: ['accounts', 'superadmin'] },
-    { to: '/admin/reports', icon: '📈', label: 'Reports', roles: ['superadmin', 'accounts'] },
   ];
   const links = allLinks.filter(l => l.roles.includes(role));
   return (

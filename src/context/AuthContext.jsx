@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import api from '../utils/api';
+import { getMe } from '@/services/authService';
+import { TOKEN_KEY, USER_KEY } from '@/config/constants';
 
 const AuthContext = createContext(null);
 
@@ -8,17 +9,17 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   const loadUser = useCallback(async () => {
-    const token = localStorage.getItem('iehe_token');
+    const token = localStorage.getItem(TOKEN_KEY);
     if (!token) {
       setLoading(false);
       return;
     }
     try {
-      const res = await api.get('/auth/me');
+      const res = await getMe();
       setUser(res.data.user);
     } catch {
-      localStorage.removeItem('iehe_token');
-      localStorage.removeItem('iehe_user');
+      localStorage.removeItem(TOKEN_KEY);
+      localStorage.removeItem(USER_KEY);
     } finally {
       setLoading(false);
     }
@@ -29,14 +30,14 @@ export const AuthProvider = ({ children }) => {
   }, [loadUser]);
 
   const login = (token, userData) => {
-    localStorage.setItem('iehe_token', token);
-    localStorage.setItem('iehe_user', JSON.stringify(userData));
+    localStorage.setItem(TOKEN_KEY, token);
+    localStorage.setItem(USER_KEY, JSON.stringify(userData));
     setUser(userData);
   };
 
   const logout = () => {
-    localStorage.removeItem('iehe_token');
-    localStorage.removeItem('iehe_user');
+    localStorage.removeItem(TOKEN_KEY);
+    localStorage.removeItem(USER_KEY);
     setUser(null);
   };
 

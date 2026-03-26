@@ -1,27 +1,16 @@
-import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
-import { Sidebar, Topbar } from '../../components/common/Sidebar';
-import { KpiCard, Spinner, EmptyState } from '../../components/common';
-import { formatDate, statusLabel, statusPill, ROLE_LABELS } from '../../utils/helpers';
-import api from '../../utils/api';
+import { useAuth } from '@/context/AuthContext';
+import { Sidebar, Topbar } from '@/components/common/Sidebar';
+import { KpiCard, Spinner, EmptyState } from '@/components/common';
+import { formatDate } from '@/utils/formatters';
+import { statusLabel, statusPill } from '@/utils/mappers';
+import { useDashboardStats } from '@/hooks/useDashboardStats';
+import { ROLE_LABELS, CLEARANCE_ROLES, REFUND_ROLES } from '@/config/constants';
 
 export default function AdminDashboard() {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    api
-      .get('/application/stats/dashboard')
-      .then(r => setData(r.data))
-      .catch(console.error)
-      .finally(() => setLoading(false));
-  }, []);
-
-  const stats = data?.stats || {};
-  const recent = data?.recentApplications || [];
+  const { stats, recentApplications: recent, loading } = useDashboardStats();
 
   return (
     <div className="dash-layout">
@@ -53,7 +42,7 @@ export default function AdminDashboard() {
                 />
                 <KpiCard icon="✅" value={stats.cleared || 0} label="Fully Cleared" color="green" />
                 <KpiCard icon="⚠️" value={stats.onHold || 0} label="On Hold" color="amber" />
-                {user?.role === 'superadmin' || user?.role === 'accounts' ? (
+                {(user?.role === 'superadmin' || user?.role === 'accounts') && (
                   <>
                     <KpiCard
                       icon="💰"
@@ -74,13 +63,13 @@ export default function AdminDashboard() {
                       color="blue"
                     />
                     <KpiCard
-                      icon="❌"
-                      value={stats.onHold || 0}
-                      label="Pending Action"
+                      icon="⏱️"
+                      value={(stats.cleared || 0) - (stats.refunded || 0)}
+                      label="Awaiting Refund"
                       color="red"
                     />
                   </>
-                ) : null}
+                )}
               </div>
 
               {/* Role-specific quick action */}
@@ -181,7 +170,7 @@ export default function AdminDashboard() {
                     >
                       📋 View All Applications
                     </button>
-                    {['library', 'sports', 'hostel', 'department'].includes(user?.role) && (
+                    {CLEARANCE_ROLES.includes(user?.role) && (
                       <button
                         className="btn btn-full"
                         style={{
@@ -200,7 +189,7 @@ export default function AdminDashboard() {
                         ✅ Manage My Clearances
                       </button>
                     )}
-                    {['accounts', 'superadmin'].includes(user?.role) && (
+                    {REFUND_ROLES.includes(user?.role) && (
                       <button
                         className="btn btn-full"
                         style={{

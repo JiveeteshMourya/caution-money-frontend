@@ -1,24 +1,16 @@
-import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
-import { Sidebar, Topbar } from '../../components/common/Sidebar';
-import { KpiCard, ClearanceCard, Alert, Spinner, EmptyState } from '../../components/common';
-import { formatDate, statusLabel, statusPill, maskAccount } from '../../utils/helpers';
-import api from '../../utils/api';
+import { useAuth } from '@/context/AuthContext';
+import { Sidebar, Topbar } from '@/components/common/Sidebar';
+import { KpiCard, ClearanceCard, Alert, Spinner, EmptyState } from '@/components/common';
+import { formatDate, maskAccount } from '@/utils/formatters';
+import { statusLabel, statusPill } from '@/utils/mappers';
+import { useMyApplication } from '@/hooks/useMyApplication';
+import { REFUND_AMOUNT_DISPLAY } from '@/config/constants';
 
 export default function StudentDashboard() {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [app, setApp] = useState(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    api
-      .get('/application/my')
-      .then(r => setApp(r.data.application))
-      .catch(() => setApp(null))
-      .finally(() => setLoading(false));
-  }, []);
+  const { application: app, loading } = useMyApplication();
 
   const paid = app?.refundStatus === 'processed';
   const allClear = app?.overallStatus === 'fully_cleared' || paid;
@@ -52,7 +44,12 @@ export default function StudentDashboard() {
                 className="kpi-grid"
                 style={{ gridTemplateColumns: 'repeat(3,1fr)', marginBottom: 24 }}
               >
-                <KpiCard icon="💰" value="₹5,000" label="Refund Amount" color="gold" />
+                <KpiCard
+                  icon="💰"
+                  value={REFUND_AMOUNT_DISPLAY}
+                  label="Refund Amount"
+                  color="gold"
+                />
                 <KpiCard
                   icon="📋"
                   value={app ? statusLabel(app.overallStatus) : 'Not Applied'}
@@ -103,7 +100,7 @@ export default function StudentDashboard() {
                       <div className="hsc-meta">Submitted: {formatDate(app.submittedAt)}</div>
                     </div>
                     <div className="refund-box">
-                      <div className="amt">₹5,000</div>
+                      <div className="amt">{REFUND_AMOUNT_DISPLAY}</div>
                       <div className="lbl">Caution Money</div>
                       {paid && (
                         <div style={{ fontSize: 12, marginTop: 6, color: 'var(--navy)' }}>
@@ -116,7 +113,7 @@ export default function StudentDashboard() {
                   {/* Paid alert */}
                   {paid && (
                     <Alert type="success">
-                      🎉 Your ₹5,000 refund has been processed! Transaction ID:{' '}
+                      🎉 Your {REFUND_AMOUNT_DISPLAY} refund has been processed! Transaction ID:{' '}
                       <strong className="mono">{app.refundTransactionId}</strong>. It will reflect
                       in your bank account within 2–3 business days.
                     </Alert>

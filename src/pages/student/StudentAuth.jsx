@@ -1,26 +1,24 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { useAuth } from '../../context/AuthContext';
-import { Field, Alert, StepProgress } from '../../components/common';
-import { DEPARTMENTS } from '../../utils/helpers';
-import api from '../../utils/api';
+import { useAuth } from '@/context/AuthContext';
+import { Field, Alert, StepProgress } from '@/components/common';
+import { studentLogin, studentRegister } from '@/services/authService';
+import { DEPARTMENTS, PASSOUT_YEARS } from '@/config/constants';
 
 const STEPS = ['Basic Info', 'Security', 'Confirm'];
 
 export default function StudentAuth() {
-  const [tab, setTab] = useState('login'); // 'login' | 'register'
+  const [tab, setTab] = useState('login');
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [hosteller, setHosteller] = useState(false);
+  const [agreed, setAgreed] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
 
-  // Login form state
   const [loginData, setLoginData] = useState({ enrollmentNumber: '', password: '' });
-
-  // Register form state
   const [regData, setRegData] = useState({
     enrollmentNumber: '',
     name: '',
@@ -45,7 +43,7 @@ export default function StudentAuth() {
     }
     setLoading(true);
     try {
-      const res = await api.post('/auth/student/login', loginData);
+      const res = await studentLogin(loginData);
       login(res.data.token, res.data.user);
       toast.success(`Welcome back, ${res.data.user.name.split(' ')[0]}! 👋`);
       navigate('/student/dashboard');
@@ -87,12 +85,16 @@ export default function StudentAuth() {
 
   // ── Register Submit ──
   const handleRegister = async () => {
+    if (!agreed) {
+      setError('Please confirm the declaration before registering.');
+      return;
+    }
     setLoading(true);
     setError('');
     try {
       const payload = { ...regData, isHosteller: hosteller };
       delete payload.confirmPassword;
-      const res = await api.post('/auth/student/register', payload);
+      const res = await studentRegister(payload);
       login(res.data.token, res.data.user);
       toast.success('Registration successful! Welcome to IEHE Portal 🎉');
       navigate('/student/application');
@@ -256,7 +258,7 @@ export default function StudentAuth() {
                       onChange={e => setReg('passoutYear', e.target.value)}
                     >
                       <option value="">Select Year</option>
-                      {[2025, 2024, 2023, 2022, 2021, 2020].map(y => (
+                      {PASSOUT_YEARS.map(y => (
                         <option key={y}>{y}</option>
                       ))}
                     </select>
@@ -364,7 +366,8 @@ export default function StudentAuth() {
                     type="checkbox"
                     id="declare"
                     style={{ marginTop: 3, accentColor: 'var(--gold)' }}
-                    required
+                    checked={agreed}
+                    onChange={e => setAgreed(e.target.checked)}
                   />
                   <label
                     htmlFor="declare"

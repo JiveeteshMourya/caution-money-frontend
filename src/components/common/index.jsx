@@ -1,4 +1,5 @@
-import { statusPill, clearanceLabel, deptIcons } from '../../utils/helpers';
+import { statusPill, clearanceLabel } from '@/utils/mappers';
+import { DEPT_ICONS as deptIcons } from '@/config/constants';
 
 // ── Spinner ───────────────────────────────────────────────────────
 export const Spinner = ({ text = 'Loading…' }) => (

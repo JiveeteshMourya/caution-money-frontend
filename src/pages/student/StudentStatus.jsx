@@ -1,49 +1,20 @@
-import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Sidebar, Topbar } from '../../components/common/Sidebar';
-import {
-  ClearanceCard,
-  Alert,
-  Spinner,
-  EmptyState,
-  Timeline,
-  InfoRow,
-} from '../../components/common';
-import { formatDate, formatDateTime, statusLabel, maskAccount } from '../../utils/helpers';
-import api from '../../utils/api';
-
-const STEPS_MAP = {
-  submitted: 1,
-  under_review: 2,
-  partially_cleared: 2,
-  on_hold: 2,
-  fully_cleared: 3,
-  refund_processed: 4,
-};
+import { Sidebar, Topbar } from '@/components/common/Sidebar';
+import { ClearanceCard, Alert, Spinner, EmptyState, Timeline, InfoRow } from '@/components/common';
+import { formatDate, formatDateTime, maskAccount } from '@/utils/formatters';
+import { statusLabel } from '@/utils/mappers';
+import { useMyApplication } from '@/hooks/useMyApplication';
+import { APPLICATION_STATUS_STEPS, REFUND_AMOUNT_DISPLAY } from '@/config/constants';
 
 export default function StudentStatus() {
   const navigate = useNavigate();
-  const [app, setApp] = useState(null);
-  const [loading, setLoading] = useState(true);
-
-  const refresh = () => {
-    setLoading(true);
-    api
-      .get('/application/my')
-      .then(r => setApp(r.data.application))
-      .catch(() => setApp(null))
-      .finally(() => setLoading(false));
-  };
-
-  useEffect(() => {
-    refresh();
-  }, []);
+  const { application: app, loading, refresh } = useMyApplication();
 
   const clearanceTypes = app
     ? ['library', 'sports', ...(app.isHosteller ? ['hostel'] : []), 'department', 'accounts']
     : [];
 
-  const statusStep = STEPS_MAP[app?.overallStatus] || 1;
+  const statusStep = APPLICATION_STATUS_STEPS[app?.overallStatus] || 1;
 
   return (
     <div className="dash-layout">
@@ -169,7 +140,7 @@ export default function StudentStatus() {
                 {/* Status alerts */}
                 {app.overallStatus === 'refund_processed' && (
                   <Alert type="success">
-                    🎉 Your ₹5,000 refund has been processed! Txn ID:{' '}
+                    🎉 Your {REFUND_AMOUNT_DISPLAY} refund has been processed! Txn ID:{' '}
                     <strong className="mono">{app.refundTransactionId}</strong>. Credit expected in
                     2–3 business days.
                   </Alert>

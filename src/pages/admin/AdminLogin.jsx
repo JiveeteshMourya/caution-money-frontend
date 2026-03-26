@@ -1,19 +1,10 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { useAuth } from '../../context/AuthContext';
-import { Field, Alert } from '../../components/common';
-import { ROLE_LABELS } from '../../utils/helpers';
-import api from '../../utils/api';
-
-const ROLE_ICONS = {
-  superadmin: '👑',
-  library: '📚',
-  sports: '⚽',
-  hostel: '🏠',
-  department: '🎓',
-  accounts: '💳',
-};
+import { useAuth } from '@/context/AuthContext';
+import { Field, Alert } from '@/components/common';
+import { adminLogin } from '@/services/authService';
+import { ROLE_LABELS, ROLE_ICONS } from '@/config/constants';
 
 export default function AdminLogin() {
   const [form, setForm] = useState({ email: '', password: '', role: '' });
@@ -31,10 +22,7 @@ export default function AdminLogin() {
     }
     setLoading(true);
     try {
-      const res = await api.post('/auth/admin/login', {
-        email: form.email,
-        password: form.password,
-      });
+      const res = await adminLogin({ email: form.email, password: form.password });
       login(res.data.token, res.data.user);
       toast.success(`Welcome, ${res.data.user.name}! 🔐`);
       navigate('/admin/dashboard');

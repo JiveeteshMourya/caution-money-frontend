@@ -1,47 +1,25 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import toast from 'react-hot-toast';
-import { useAuth } from '../../context/AuthContext';
-import { Sidebar, Topbar } from '../../components/common/Sidebar';
-import { ClearanceCard, Alert, Spinner, Modal, InfoRow, Timeline } from '../../components/common';
-import {
-  formatDate,
-  formatDateTime,
-  statusLabel,
-  statusPill,
-  maskAccount,
-  deptIcons,
-  ROLE_LABELS,
-} from '../../utils/helpers';
-import api from '../../utils/api';
-
-const CLEARANCE_ROLE_MAP = {
-  library: ['library', 'superadmin'],
-  sports: ['sports', 'superadmin'],
-  hostel: ['hostel', 'superadmin'],
-  department: ['department', 'superadmin'],
-  accounts: ['accounts', 'superadmin'],
-};
+import { useAuth } from '@/context/AuthContext';
+import { Sidebar, Topbar } from '@/components/common/Sidebar';
+import { ClearanceCard, Alert, Spinner, Modal, InfoRow, Timeline } from '@/components/common';
+import { formatDate, formatDateTime, maskAccount } from '@/utils/formatters';
+import { statusLabel, statusPill } from '@/utils/mappers';
+import { useApplicationDetail } from '@/hooks/useApplicationDetail';
+import { CLEARANCE_ROLE_MAP, REFUND_AMOUNT_DISPLAY } from '@/config/constants';
 
 export default function AdminApplicationDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const [app, setApp] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const {
+    application: app,
+    loading,
+    updating,
+    updateClearanceStatus,
+    triggerRefund,
+  } = useApplicationDetail(id);
   const [modal, setModal] = useState({ open: false, type: '', status: 'cleared', reason: '' });
-  const [updating, setUpdating] = useState(false);
-
-  const fetchApp = () => {
-    setLoading(true);
-    api
-      .get(`/application/${id}`)
-      .then(r => setApp(r.data.application))
-      .catch(() => navigate('/admin/applications'))
-      .finally(() => setLoading(false));
-  };
-
-  useEffect(fetchApp, [id]);
 
   const clearanceTypes = app
     ? ['library', 'sports', ...(app.isHosteller ? ['hostel'] : []), 'department', 'accounts']
@@ -50,47 +28,18 @@ export default function AdminApplicationDetail() {
   const canUpdate = type => CLEARANCE_ROLE_MAP[type]?.includes(user?.role);
 
   const openModal = type => {
-    const current = app.clearances[type];
+    const current = app.clearances?.[type];
     setModal({
       open: true,
       type,
-      status: current.status === 'cleared' ? 'pending' : 'cleared',
-      reason: current.reason || '',
+      status: current?.status === 'cleared' ? 'pending' : 'cleared',
+      reason: current?.reason || '',
     });
   };
 
   const handleUpdate = async () => {
-    if (modal.status === 'hold' && !modal.reason.trim()) {
-      toast.error('Please provide a reason for putting on hold.');
-      return;
-    }
-    setUpdating(true);
-    try {
-      await api.patch(`/application/${id}/clearance`, {
-        clearanceType: modal.type,
-        status: modal.status,
-        reason: modal.reason,
-      });
-      toast.success(`${modal.type} clearance updated to ${modal.status}`);
-      setModal(m => ({ ...m, open: false }));
-      fetchApp();
-    } catch (err) {
-      toast.error(err.response?.data?.error || 'Update failed');
-    } finally {
-      setUpdating(false);
-    }
-  };
-
-  const handleRefund = async () => {
-    if (!window.confirm('Are you sure you want to process the ₹5,000 refund for this student?'))
-      return;
-    try {
-      const r = await api.patch(`/application/${id}/refund`);
-      toast.success(`Refund processed! Txn: ${r.data.transactionId}`);
-      fetchApp();
-    } catch (err) {
-      toast.error(err.response?.data?.error || 'Refund processing failed');
-    }
+    const ok = await updateClearanceStatus(modal.type, modal.status, modal.reason);
+    if (ok) setModal(m => ({ ...m, open: false }));
   };
 
   if (loading)
@@ -157,15 +106,15 @@ export default function AdminApplicationDetail() {
                 <button
                   className="btn btn-sm btn-success"
                   style={{ marginLeft: 12 }}
-                  onClick={handleRefund}
+                  onClick={triggerRefund}
                 >
-                  💰 Process ₹5,000 Refund
+                  💰 Process {REFUND_AMOUNT_DISPLAY} Refund
                 </button>
               </Alert>
             )}
           {app.refundStatus === 'processed' && (
             <Alert type="success">
-              🎉 Refund of ₹5,000 has been processed. Txn ID:{' '}
+              🎉 Refund of {REFUND_AMOUNT_DISPLAY} has been processed. Txn ID:{' '}
               <strong className="mono">{app.refundTransactionId}</strong>
               <span style={{ fontSize: 12, marginLeft: 8, color: 'var(--muted)' }}>
                 ({formatDateTime(app.refundProcessedAt)})
@@ -227,7 +176,7 @@ export default function AdminApplicationDetail() {
                   fontSize: 13,
                 }}
               >
-                💰 Refund Amount: <strong>₹5,000</strong>
+                💰 Refund Amount: <strong>{REFUND_AMOUNT_DISPLAY}</strong>
                 {app.refundStatus === 'processed' && (
                   <span style={{ marginLeft: 10, color: 'var(--success)', fontWeight: 600 }}>
                     ✓ Processed

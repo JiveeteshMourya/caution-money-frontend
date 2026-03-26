@@ -1,21 +1,23 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { useAuth } from '../../context/AuthContext';
-import { Sidebar, Topbar } from '../../components/common/Sidebar';
-import { Field, Alert, StepProgress, Spinner } from '../../components/common';
-import api from '../../utils/api';
+import { useAuth } from '@/context/AuthContext';
+import { Sidebar, Topbar } from '@/components/common/Sidebar';
+import { Field, Alert, StepProgress, Spinner } from '@/components/common';
+import { useMyApplication } from '@/hooks/useMyApplication';
+import { submitApplication } from '@/services/applicationService';
+import { PASSOUT_YEARS, REFUND_AMOUNT_DISPLAY } from '@/config/constants';
 
 const STEPS = ['Personal Info', 'Bank Details', 'Declaration', 'Submit'];
 
 export default function StudentApplication() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { application: existing, loading } = useMyApplication();
+
   const [step, setStep] = useState(1);
-  const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
-  const [existing, setExisting] = useState(null);
 
   const [form, setForm] = useState({
     passoutYear: '',
@@ -29,14 +31,6 @@ export default function StudentApplication() {
     },
     declaration: false,
   });
-
-  useEffect(() => {
-    api
-      .get('/application/my')
-      .then(r => setExisting(r.data.application))
-      .catch(() => {})
-      .finally(() => setLoading(false));
-  }, []);
 
   const setBank = (k, v) => setForm(p => ({ ...p, bankDetails: { ...p.bankDetails, [k]: v } }));
 
@@ -85,7 +79,7 @@ export default function StudentApplication() {
           branchName: form.bankDetails.branchName,
         },
       };
-      await api.post('/application/submit', payload);
+      await submitApplication(payload);
       toast.success('Application submitted successfully! 🎉');
       navigate('/student/status');
     } catch (err) {
@@ -142,7 +136,10 @@ export default function StudentApplication() {
         <div className="page-content">
           <div className="page-header">
             <h2>Refund Application</h2>
-            <p>Fill in the details below to apply for your ₹5,000 caution money refund.</p>
+            <p>
+              Fill in the details below to apply for your {REFUND_AMOUNT_DISPLAY} caution money
+              refund.
+            </p>
           </div>
 
           <div className="card">
@@ -197,7 +194,7 @@ export default function StudentApplication() {
                         onChange={e => setForm(p => ({ ...p, passoutYear: e.target.value }))}
                       >
                         <option value="">Select Year</option>
-                        {[2025, 2024, 2023, 2022, 2021, 2020].map(y => (
+                        {PASSOUT_YEARS.map(y => (
                           <option key={y}>{y}</option>
                         ))}
                       </select>
@@ -220,7 +217,8 @@ export default function StudentApplication() {
                   Bank Account Details
                 </div>
                 <div className="card-sub">
-                  The ₹5,000 refund will be credited to this account. Verify carefully.
+                  The {REFUND_AMOUNT_DISPLAY} refund will be credited to this account. Verify
+                  carefully.
                 </div>
                 <Alert type="warning">
                   🔒 Your bank details are encrypted and used only for processing this refund.
@@ -326,7 +324,7 @@ export default function StudentApplication() {
                     </li>
                     <li>
                       I have cleared all dues to the college and I am eligible for the caution money
-                      refund of ₹5,000.
+                      refund of {REFUND_AMOUNT_DISPLAY}.
                     </li>
                     <li>
                       The bank account details provided are correct, and I take full responsibility
@@ -372,7 +370,7 @@ export default function StudentApplication() {
                     ['Passing Year', form.passoutYear],
                     ['Bank', form.bankDetails.bankName],
                     ['IFSC', form.bankDetails.ifscCode],
-                    ['Refund Amount', '₹5,000'],
+                    ['Refund Amount', REFUND_AMOUNT_DISPLAY],
                   ].map(([k, v]) => (
                     <div className="bank-row" key={k}>
                       <span className="bank-key">{k}</span>
