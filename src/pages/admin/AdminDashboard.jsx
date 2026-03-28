@@ -74,6 +74,7 @@ export default function AdminDashboard() {
 
               {/* Role-specific quick action */}
               <div
+                className="dash-grid-main"
                 style={{
                   display: 'grid',
                   gridTemplateColumns: '2fr 1fr',

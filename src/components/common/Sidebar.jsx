@@ -1,5 +1,6 @@
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
+import { useLayout } from '@/context/LayoutContext';
 import { getInitials } from '@/utils/formatters';
 import { ROLE_LABELS } from '@/config/constants';
 
@@ -69,6 +70,7 @@ const AdminSidebar = ({ user }) => {
 export const Sidebar = ({ type = 'student' }) => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const { mobileMenuOpen, closeMobileMenu } = useLayout();
 
   const handleLogout = () => {
     logout();
@@ -78,66 +80,81 @@ export const Sidebar = ({ type = 'student' }) => {
   const roleLabel = type === 'student' ? 'Student Portal' : ROLE_LABELS[user?.role] || 'Admin';
 
   return (
-    <aside className="sidebar">
-      <div className="sidebar-logo">
-        <div className="seal">IE</div>
-        <h2>IEHE Bhopal</h2>
-        <p>Caution Money Portal</p>
-      </div>
-
-      <div className="sidebar-role">
-        <div className="rl">Logged in as</div>
-        <div className="rn">{roleLabel}</div>
-      </div>
-
-      {type === 'student' ? <StudentSidebar user={user} /> : <AdminSidebar user={user} />}
-
-      <div className="sidebar-footer">
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 10,
-            padding: '10px 12px',
-            marginBottom: 10,
-            background: 'rgba(255,255,255,0.04)',
-            borderRadius: 10,
-          }}
-        >
-          <div className="user-av" style={{ width: 32, height: 32, fontSize: 12 }}>
-            {getInitials(user?.name || user?.enrollmentNumber || 'U')}
-          </div>
-          <div style={{ flex: 1, overflow: 'hidden' }}>
-            <div
-              style={{
-                fontSize: 13,
-                color: 'white',
-                fontWeight: 600,
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                whiteSpace: 'nowrap',
-              }}
-            >
-              {user?.name || user?.enrollmentNumber}
-            </div>
-            <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)' }}>
-              {type === 'student' ? user?.department : user?.email}
-            </div>
-          </div>
+    <>
+      <div
+        className={`sidebar-overlay${mobileMenuOpen ? ' visible' : ''}`}
+        onClick={closeMobileMenu}
+        aria-hidden="true"
+      />
+      <aside className={`sidebar${mobileMenuOpen ? ' open' : ''}`}>
+        <div className="sidebar-logo">
+          <div className="seal">IE</div>
+          <h2>IEHE Bhopal</h2>
+          <p>Caution Money Portal</p>
         </div>
-        <button className="btn-logout" style={{ width: '100%' }} onClick={handleLogout}>
-          🚪 Logout
-        </button>
-      </div>
-    </aside>
+
+        <div className="sidebar-role">
+          <div className="rl">Logged in as</div>
+          <div className="rn">{roleLabel}</div>
+        </div>
+
+        {type === 'student' ? <StudentSidebar user={user} /> : <AdminSidebar user={user} />}
+
+        <div className="sidebar-footer">
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 10,
+              padding: '10px 12px',
+              marginBottom: 10,
+              background: 'rgba(255,255,255,0.04)',
+              borderRadius: 10,
+            }}
+          >
+            <div className="user-av" style={{ width: 32, height: 32, fontSize: 12 }}>
+              {getInitials(user?.name || user?.enrollmentNumber || 'U')}
+            </div>
+            <div style={{ flex: 1, overflow: 'hidden' }}>
+              <div
+                style={{
+                  fontSize: 13,
+                  color: 'white',
+                  fontWeight: 600,
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                {user?.name || user?.enrollmentNumber}
+              </div>
+              <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)' }}>
+                {type === 'student' ? user?.department : user?.email}
+              </div>
+            </div>
+          </div>
+          <button className="btn-logout" style={{ width: '100%' }} onClick={handleLogout}>
+            🚪 Logout
+          </button>
+        </div>
+      </aside>
+    </>
   );
 };
 
 export const Topbar = ({ title }) => {
   const { user } = useAuth();
+  const { toggleMobileMenu } = useLayout();
   return (
     <div className="topbar">
-      <div className="topbar-title">{title}</div>
+      <div className="topbar-left">
+        <button className="hamburger-btn" onClick={toggleMobileMenu} aria-label="Toggle navigation">
+          <span className="hamburger-line" />
+          <span className="hamburger-line" />
+          <span className="hamburger-line" />
+        </button>
+        <div className="topbar-title">{title}</div>
+      </div>
       <div className="topbar-right">
         <div className="user-chip">
           <div className="user-av">{getInitials(user?.name || 'U')}</div>

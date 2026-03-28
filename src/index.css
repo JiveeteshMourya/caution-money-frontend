@@ -1067,7 +1067,8 @@ select.form-input.dark option {
   background: white;
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  overflow: hidden;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
   box-shadow: var(--shadow-sm);
 }
 .table-head {
@@ -1087,6 +1088,7 @@ select.form-input.dark option {
 }
 table {
   width: 100%;
+  min-width: 600px;
   border-collapse: collapse;
 }
 thead th {
@@ -1484,18 +1486,97 @@ tbody tr:hover {
   line-height: 1.6;
 }
 
-@media (max-width: 900px) {
-  .land-nav {
-    padding: 16px 20px;
+/* ── Topbar structural ── */
+.topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+/* ── Hamburger button — hidden on desktop ── */
+.hamburger-btn {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  width: 36px;
+  height: 36px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: var(--radius-sm);
+  flex-shrink: 0;
+}
+.hamburger-btn:hover {
+  background: var(--bg);
+}
+.hamburger-line {
+  display: block;
+  width: 20px;
+  height: 2px;
+  background: var(--navy);
+  border-radius: 2px;
+}
+
+/* ── Mobile sidebar overlay ── */
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 22, 40, 0.55);
+  z-index: 199;
+  opacity: 0;
+  transition: opacity 0.25s;
+  pointer-events: none;
+}
+
+/* ── Responsive breakpoints ── */
+
+@media (max-width: 1024px) {
+  .kpi-grid {
+    grid-template-columns: repeat(3, 1fr);
   }
-  .land-steps {
-    padding: 20px;
+  .page-content {
+    padding: 28px 24px;
+  }
+}
+
+@media (max-width: 900px) {
+  /* Topbar */
+  .topbar {
+    padding: 0 16px;
+  }
+  .hamburger-btn {
+    display: flex;
+  }
+
+  /* Sidebar drawer */
+  .sidebar-overlay {
+    display: block;
+  }
+  .sidebar-overlay.visible {
+    opacity: 1;
+    pointer-events: auto;
   }
   .sidebar {
-    display: none;
+    position: fixed;
+    left: -260px;
+    top: 0;
+    z-index: 200;
+    height: 100vh;
+    width: 260px;
+    transition: left 0.28s cubic-bezier(0.4, 0, 0.2, 1);
   }
+  .sidebar.open {
+    left: 0;
+    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.25);
+  }
+
+  /* Grids */
   .kpi-grid {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(2, 1fr);
   }
   .clearance-grid {
     grid-template-columns: 1fr;
@@ -1506,7 +1587,209 @@ tbody tr:hover {
   .page-content {
     padding: 20px 16px;
   }
+
+  /* Admin dashboard 2fr-1fr inline grid */
+  .dash-grid-main {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Landing */
+  .land-nav {
+    padding: 16px 20px;
+  }
+  .land-steps {
+    padding: 20px 16px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .step-arrow {
+    display: none;
+  }
+  .portal-card {
+    width: 100%;
+    max-width: 340px;
+  }
+  .auth-card {
+    padding: 32px 28px;
+  }
+  .page-header h2 {
+    font-size: 22px;
+  }
+  .hero-status-card {
+    padding: 20px;
+  }
+}
+
+@media (max-width: 640px) {
+  /* Typography */
+  .page-header h2 {
+    font-size: 20px;
+  }
+  .topbar-title {
+    font-size: 17px;
+  }
+  .kpi-val {
+    font-size: 22px;
+  }
+
+  /* Topbar */
   .topbar {
+    padding: 0 12px;
+    height: 54px;
+  }
+  .user-chip span {
+    display: none;
+  }
+  .user-chip {
+    padding: 5px;
+    gap: 0;
+  }
+
+  /* Layout */
+  .page-content {
+    padding: 16px 12px;
+  }
+  .card {
+    padding: 20px 16px;
+  }
+  .kpi-grid {
+    gap: 10px;
+  }
+  .kpi-card {
+    padding: 14px;
+  }
+
+  /* Hero card */
+  .hero-status-card {
+    padding: 16px;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .refund-box {
+    width: 100%;
+    text-align: left;
+    padding: 12px 16px;
+  }
+
+  /* Auth */
+  .auth-card {
+    padding: 28px 20px;
+  }
+
+  /* Landing */
+  .land-nav {
+    padding: 14px 16px;
+  }
+  .land-hero {
+    padding: 40px 16px 32px;
+  }
+  .portal-cards {
+    flex-direction: column;
+    align-items: center;
     padding: 0 16px;
+  }
+  .portal-card {
+    width: 100%;
+    max-width: 100%;
+    padding: 24px 20px;
+  }
+
+  /* Modals */
+  .modal {
+    padding: 24px 20px;
+    border-radius: 16px;
+  }
+  .modal-btns {
+    flex-direction: column-reverse;
+  }
+  .modal-btns .btn {
+    width: 100%;
+  }
+
+  /* Forms */
+  .search-input {
+    width: 100%;
+  }
+  .form-input {
+    font-size: 13px;
+  }
+
+  /* Tables */
+  .table-head {
+    padding: 12px 16px;
+  }
+  thead th {
+    padding: 10px 12px;
+  }
+  tbody td {
+    padding: 11px 12px;
+  }
+
+  /* Bank details & info rows */
+  .bank-row {
+    flex-direction: column;
+    gap: 2px;
+    margin-bottom: 10px;
+  }
+  .info-row {
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  /* Step wizard scrollable */
+  .step-progress {
+    overflow-x: auto;
+    padding-bottom: 8px;
+    -webkit-overflow-scrolling: touch;
+  }
+  .sp-label {
+    font-size: 10px;
+    max-width: 60px;
+  }
+}
+
+@media (max-width: 480px) {
+  /* KPI → single column */
+  .kpi-grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* Topbar title truncation */
+  .topbar-title {
+    font-size: 15px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: calc(100vw - 130px);
+  }
+
+  /* Typography */
+  .page-header h2 {
+    font-size: 18px;
+  }
+  .section-title {
+    font-size: 14px;
+  }
+
+  /* Auth */
+  .auth-card {
+    padding: 24px 16px;
+  }
+  .auth-logo-seal {
+    width: 48px;
+    height: 48px;
+    font-size: 17px;
+  }
+
+  /* Sidebar narrows on very small screens */
+  .sidebar {
+    width: 240px;
+    left: -240px;
+  }
+
+  /* Step labels hidden — numbers only */
+  .sp-label {
+    display: none;
   }
 }
