@@ -15,8 +15,9 @@ export const AuthProvider = ({ children }) => {
       return;
     }
     try {
+      const stored = JSON.parse(localStorage.getItem(USER_KEY) || 'null');
       const res = await getMe();
-      setUser(res.data.user);
+      setUser({ ...res.data.user, role: res.data.user?.role || stored?.role });
     } catch {
       localStorage.removeItem(TOKEN_KEY);
       localStorage.removeItem(USER_KEY);

@@ -44,7 +44,7 @@ export default function StudentAuth() {
     setLoading(true);
     try {
       const res = await studentLogin(loginData);
-      login(res.data.token, res.data.user);
+      login(res.data.token, { ...res.data.user, role: 'student' });
       toast.success(`Welcome back, ${res.data.user.name.split(' ')[0]}! 👋`);
       navigate('/student/dashboard');
     } catch (err) {
@@ -95,7 +95,7 @@ export default function StudentAuth() {
       const payload = { ...regData, isHosteller: hosteller };
       delete payload.confirmPassword;
       const res = await studentRegister(payload);
-      login(res.data.token, res.data.user);
+      login(res.data.token, { ...res.data.user, role: 'student' });
       toast.success('Registration successful! Welcome to IEHE Portal 🎉');
       navigate('/student/application');
     } catch (err) {

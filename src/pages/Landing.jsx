@@ -25,12 +25,12 @@ export default function Landing() {
           <div className="land-logo-seal">IE</div>
           <div className="land-logo-text">
             <h1>IEHE Bhopal</h1>
-            <p>Institute of Engineering &amp; Higher Education</p>
+            <p>Institute for Excellence in Higher Education, Bhopal</p>
           </div>
         </div>
         <div className="live-badge">
           <div className="live-dot" />
-          Portal Active · 2024–25
+          Portal Active · 2026
         </div>
       </nav>
 

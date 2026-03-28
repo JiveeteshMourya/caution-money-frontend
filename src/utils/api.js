@@ -13,12 +13,24 @@ api.interceptors.request.use(config => {
 });
 
 api.interceptors.response.use(
-  res => res,
+  res => {
+    if (res.data?.success !== undefined && res.data?.data !== undefined) {
+      res.data = res.data.data;
+    }
+    return res;
+  },
   err => {
     if (err.response?.status === 401) {
       localStorage.removeItem('iehe_token');
       localStorage.removeItem('iehe_user');
       window.location.href = '/';
+    }
+    if (err.response?.data?.success !== undefined) {
+      const outer = err.response.data;
+      err.response.data = {
+        ...(outer.data || {}),
+        error: outer.data?.error || outer.message,
+      };
     }
     return Promise.reject(err);
   }

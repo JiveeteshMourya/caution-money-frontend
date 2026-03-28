@@ -5,7 +5,7 @@ export const REFUND_AMOUNT_DISPLAY = '₹5,000';
 // ── Academic ──────────────────────────────────────────────────────
 export const PASSOUT_YEARS = [2026, 2025, 2024, 2023, 2022, 2021, 2020];
 
-export const DEPARTMENTS = ['CSE', 'IT', 'ECE', 'ME', 'CE', 'EE', 'MCA', 'MBA', 'Other'];
+export const DEPARTMENTS = ['CS', 'PHY', 'CHE', 'MATH', 'BIO-TECH'];
 
 // ── Roles ─────────────────────────────────────────────────────────
 export const ROLE_LABELS = {
