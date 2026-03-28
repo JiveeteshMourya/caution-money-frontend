@@ -68,3 +68,5 @@ export const APPLICATION_STATUS_STEPS = {
 // ── Storage keys ──────────────────────────────────────────────────
 export const TOKEN_KEY = 'iehe_token';
 export const USER_KEY = 'iehe_user';
+
+export const backendUrl = 'https://caution-money-backend.vercel.app/api';

@@ -1,7 +1,8 @@
 import axios from 'axios';
+import { backendUrl } from '@/config/constants';
 
 const api = axios.create({
-  baseURL: '/api',
+  baseURL: backendUrl,
   timeout: 15000,
   headers: { 'Content-Type': 'application/json' },
 });
