@@ -38,8 +38,12 @@ Kya kiya usne:
       * authService.js — login, register, adminLogin, getMe
       * applicationService.js — getMyApplication, submitApplication,
         getAllApplications, getApplicationById, updateClearance,
-        processRefund, getDashboardStats
+        processRefund, getDashboardStats, submitOfflineNoDues
         (basically poori app ki backbone, credit dena chahiye tha)
+        submitOfflineNoDues: multipart/form-data wala PATCH — file lega,
+        FormData mein daalega, noDuesImage ke naam se bhejega. JSON nahi,
+        multipart hai — isliye Content-Type: undefined pass kiya hai
+        (axios khud sahi boundary set karta hai tab)
   - Router likha (AppRoutes.jsx) — kaun sa route kahan jaata hai, role check,
     guards lagaye, sab kuch. GPS tha poori app ka.
   - Constants define ki (config/constants.js):
@@ -162,6 +166,10 @@ Kya kiya usne:
       * On Hold? Reason bhi dikhega — "book return nahi ki" etc.
       * Timeline — kab kya hua, poori history
       * Refund ho gaya? Transaction details bhi dikhega — kitne aaye, kab aaye
+      * Offline No-Dues Form section — refund process nahi hua tab tak dikhega:
+          - File input (image only) + Submit button — 5 MB se bada file? Rok dega
+          - Pehle se form upload tha? Thumbnail preview dikhega + re-upload option
+          - Submit hone pe toast + automatic refresh — sab live update hota hai
 
 Key Files:
   src/pages/student/StudentApplication.jsx,
@@ -240,11 +248,16 @@ Kya kiya usne:
         kar sakte, fair enough
       * Activity Timeline — kab kya hua, kab kisne kya kiya, poora record
       * Toast notification — kaam ho gaya ya nahi, turant pata chalega
+      * "📄 View No-Dues Form" button — Department Clearances card ke header mein
+        sirf tab dikhega jab student ne offline form upload kiya ho
+        (naya tab mein khulta hai, seedha image)
   - AdminClearances.jsx banaya (219 lines):
       * Department staff ke liye focused view — sirf apne wale applications
       * Quick approve/reject/hold directly from list — detail pe jaane ki
         zaroorat nahi, fast kaam karo
       * Pending filter — sirf jo bache hain wo dikhao
+      * "📄 View no-dues form" link (purple color) — My Clearance table ke
+        andar har us row mein jahan offline form upload hua ho — new tab mein
   - useApplicationDetail.js hook banaya:
       * Single application fetch karta hai
       * updateClearance(id, type, status, reason) — clearance update + refetch

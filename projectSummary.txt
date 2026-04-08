@@ -26,6 +26,8 @@ Ab kya hota hai is app se?
 
   - Online form bharo
   - Har department wala apne laptop se approve karta hai
+    (ya tu physically form stamp karwa ke ek photo upload kar de —
+     hybrid jugaad, works both ways)
   - Accounts process karta hai
   - Paisa aata hai
   - Tu ghar pe baitha Netflix dekh raha hai
@@ -66,6 +68,9 @@ Step 3: Departments mein chakkar
   → Har department wala apni screen pe dekh raha hai teri application
   → Wo ya toh "Cleared" maarte hain ya "On Hold" (matlab kuch gadbad hai)
   → 5 departments hain: Library, Sports, Hostel, Dept, Accounts
+  → Ek shortcut bhi hai: physically form stamp karwao sab se, photo khicho,
+    upload karo — har admin usi photo ko dekh ke clear kar sakta hai
+    (chakkar wahi hain, lekin ab digital proof bhi dene ki option hai)
 
 Step 4: Sab clear ho gaye
   → Pehle 4 departments clear kar dein → status banta hai "Fully Cleared"
