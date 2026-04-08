@@ -6,7 +6,7 @@ import { ClearanceCard, Alert, Spinner, Modal, InfoRow, Timeline } from '@/compo
 import { formatDate, formatDateTime, maskAccount } from '@/utils/formatters';
 import { statusLabel, statusPill } from '@/utils/mappers';
 import { useApplicationDetail } from '@/hooks/useApplicationDetail';
-import { CLEARANCE_ROLE_MAP, REFUND_AMOUNT_DISPLAY } from '@/config/constants';
+import { CLEARANCE_ROLE_MAP, REFUND_AMOUNT_DISPLAY, backendUrl } from '@/config/constants';
 
 export default function AdminApplicationDetail() {
   const { id } = useParams();
@@ -199,8 +199,33 @@ export default function AdminApplicationDetail() {
               <div className="card-title" style={{ fontSize: 16, margin: 0 }}>
                 Department Clearances
               </div>
-              <div style={{ fontSize: 12, color: 'var(--muted)' }}>
-                Click on a clearance to update (if you have permission)
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                {app.noDuesMode === 'offline' && app.noDuesImageId && (
+                  <a
+                    href={`${backendUrl}/image/${app.noDuesImageId}`}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    <button
+                      style={{
+                        background: '#faf5ff',
+                        border: '1px solid #e9d5ff',
+                        color: '#7c3aed',
+                        borderRadius: 7,
+                        padding: '5px 12px',
+                        fontSize: 12,
+                        cursor: 'pointer',
+                        fontFamily: 'DM Sans',
+                        fontWeight: 600,
+                      }}
+                    >
+                      📄 View No-Dues Form
+                    </button>
+                  </a>
+                )}
+                <div style={{ fontSize: 12, color: 'var(--muted)' }}>
+                  Click on a clearance to update (if you have permission)
+                </div>
               </div>
             </div>
             <div className="clearance-grid">

@@ -7,6 +7,7 @@ import { Spinner, EmptyState } from '@/components/common';
 import { formatDate } from '@/utils/formatters';
 import { statusPill } from '@/utils/mappers';
 import { getAllApplications, updateClearance } from '@/services/applicationService';
+import { backendUrl } from '@/config/constants';
 
 export default function AdminClearances() {
   const { user } = useAuth();
@@ -163,6 +164,19 @@ export default function AdminClearances() {
                           {c?.reason && (
                             <div style={{ fontSize: 11, color: 'var(--muted)', marginTop: 3 }}>
                               {c.reason}
+                            </div>
+                          )}
+                          {a.noDuesMode === 'offline' && a.noDuesImageId && (
+                            <div style={{ fontSize: 11, color: '#7c3aed', marginTop: 3 }}>
+                              📄{' '}
+                              <a
+                                href={`${backendUrl}/image/${a.noDuesImageId}`}
+                                target="_blank"
+                                rel="noreferrer"
+                                style={{ color: '#7c3aed' }}
+                              >
+                                View no-dues form
+                              </a>
                             </div>
                           )}
                         </td>

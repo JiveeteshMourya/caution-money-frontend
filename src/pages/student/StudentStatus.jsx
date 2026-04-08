@@ -1,18 +1,46 @@
+import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import { Sidebar, Topbar } from '@/components/common/Sidebar';
 import { ClearanceCard, Alert, Spinner, EmptyState, Timeline, InfoRow } from '@/components/common';
 import { formatDate, formatDateTime, maskAccount } from '@/utils/formatters';
 import { statusLabel } from '@/utils/mappers';
 import { useMyApplication } from '@/hooks/useMyApplication';
-import { APPLICATION_STATUS_STEPS, REFUND_AMOUNT_DISPLAY } from '@/config/constants';
+import { APPLICATION_STATUS_STEPS, REFUND_AMOUNT_DISPLAY, backendUrl } from '@/config/constants';
+import { submitOfflineNoDues } from '@/services/applicationService';
 
 export default function StudentStatus() {
   const navigate = useNavigate();
   const { application: app, loading, refresh } = useMyApplication();
+  const [uploading, setUploading] = useState(false);
+  const fileRef = useRef(null);
 
   const clearanceTypes = app
     ? ['library', 'sports', ...(app.isHosteller ? ['hostel'] : []), 'department', 'accounts']
     : [];
+
+  const handleOfflineUpload = async () => {
+    const file = fileRef.current?.files?.[0];
+    if (!file) {
+      toast.error('Please select a file first');
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('File too large — maximum size is 5 MB');
+      return;
+    }
+    setUploading(true);
+    try {
+      await submitOfflineNoDues(file);
+      toast.success('Offline no-dues form submitted successfully');
+      if (fileRef.current) fileRef.current.value = '';
+      refresh();
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Upload failed');
+    } finally {
+      setUploading(false);
+    }
+  };
 
   const statusStep = APPLICATION_STATUS_STEPS[app?.overallStatus] || 1;
 
@@ -170,6 +198,77 @@ export default function StudentStatus() {
                   ))}
                 </div>
               </div>
+
+              {/* Offline No-Dues Upload */}
+              {app.refundStatus !== 'processed' && (
+                <div className="card" style={{ marginBottom: 20 }}>
+                  <div className="card-title" style={{ fontSize: 17, marginBottom: 4 }}>
+                    Offline No-Dues Form
+                  </div>
+                  <p style={{ fontSize: 13, color: 'var(--muted)', marginBottom: 14 }}>
+                    If you have physically obtained the no-dues form signed by all departments,
+                    upload a photo of the completed form here. Each admin will review it to approve
+                    their section.
+                  </p>
+
+                  {app.noDuesMode === 'offline' && app.noDuesImageId && (
+                    <div style={{ marginBottom: 14 }}>
+                      <a
+                        href={`${backendUrl}/image/${app.noDuesImageId}`}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        <img
+                          src={`${backendUrl}/image/${app.noDuesImageId}`}
+                          alt="Offline no-dues form"
+                          style={{
+                            maxWidth: '100%',
+                            maxHeight: 180,
+                            borderRadius: 8,
+                            border: '1px solid #e9d5ff',
+                            display: 'block',
+                            marginBottom: 6,
+                          }}
+                        />
+                      </a>
+                      <div style={{ color: '#7c3aed', fontSize: 12 }}>
+                        ✅ Form submitted — awaiting admin review. Re-upload to replace.
+                      </div>
+                    </div>
+                  )}
+
+                  <div style={{ color: '#6b21a8', fontWeight: 600, marginBottom: 8, fontSize: 13 }}>
+                    📄{' '}
+                    {app.noDuesMode === 'offline'
+                      ? 'Re-upload Form'
+                      : 'Upload Offline No-Dues Form'}
+                  </div>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    ref={fileRef}
+                    style={{ fontSize: 12, marginBottom: 10, display: 'block' }}
+                  />
+                  <button
+                    disabled={uploading}
+                    onClick={handleOfflineUpload}
+                    style={{
+                      background: '#7c3aed',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: 8,
+                      padding: '7px 18px',
+                      fontSize: 13,
+                      cursor: uploading ? 'not-allowed' : 'pointer',
+                      fontFamily: 'DM Sans',
+                      fontWeight: 600,
+                      opacity: uploading ? 0.7 : 1,
+                    }}
+                  >
+                    {uploading ? 'Uploading…' : 'Submit Form'}
+                  </button>
+                </div>
+              )}
 
               {/* Application Details */}
               <div
