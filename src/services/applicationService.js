@@ -15,3 +15,13 @@ export const submitOfflineNoDues = file => {
     headers: { 'Content-Type': undefined },
   });
 };
+
+export const uploadDocuments = (tcOrAdmissionSlip, bankPassbook, feesSlip) => {
+  const formData = new FormData();
+  formData.append('tcOrAdmissionSlip', tcOrAdmissionSlip);
+  formData.append('bankPassbook', bankPassbook);
+  formData.append('feesSlip', feesSlip);
+  return api.patch('/application/my/documents', formData, {
+    headers: { 'Content-Type': undefined },
+  });
+};

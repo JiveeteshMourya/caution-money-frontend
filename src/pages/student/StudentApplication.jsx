@@ -1,14 +1,14 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { useAuth } from '@/context/AuthContext';
 import { Sidebar, Topbar } from '@/components/common/Sidebar';
 import { Field, Alert, StepProgress, Spinner } from '@/components/common';
 import { useMyApplication } from '@/hooks/useMyApplication';
-import { submitApplication } from '@/services/applicationService';
+import { submitApplication, uploadDocuments } from '@/services/applicationService';
 import { PASSOUT_YEARS, REFUND_AMOUNT_DISPLAY } from '@/config/constants';
 
-const STEPS = ['Personal Info', 'Bank Details', 'Declaration', 'Submit'];
+const STEPS = ['Personal Info', 'Bank Details', 'Documents', 'Declaration'];
 
 export default function StudentApplication() {
   const { user } = useAuth();
@@ -18,6 +18,12 @@ export default function StudentApplication() {
   const [step, setStep] = useState(1);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
+
+  const [docs, setDocs] = useState({
+    tcOrAdmissionSlip: null,
+    bankPassbook: null,
+    feesSlip: null,
+  });
 
   const [form, setForm] = useState({
     passoutYear: '',
@@ -34,6 +40,18 @@ export default function StudentApplication() {
 
   const setBank = (k, v) => setForm(p => ({ ...p, bankDetails: { ...p.bankDetails, [k]: v } }));
 
+  const docsUploaded =
+    Boolean(existing?.tcOrAdmissionSlipImageId) &&
+    Boolean(existing?.bankPassbookImageId) &&
+    Boolean(existing?.feesSlipImageId);
+
+  // If app exists but documents are missing, jump straight to the document upload step
+  useEffect(() => {
+    if (existing && !docsUploaded) {
+      setStep(3);
+    }
+  }, [existing, docsUploaded]);
+
   const validateStep = () => {
     if (step === 1) {
       if (!form.passoutYear) return 'Please select your passing year.';
@@ -46,6 +64,14 @@ export default function StudentApplication() {
       if (!/^[A-Z]{4}0[A-Z0-9]{6}$/i.test(b.ifscCode))
         return 'Enter a valid IFSC code (e.g. SBIN0001234).';
       if (!b.bankName) return 'Bank name is required.';
+    }
+    if (step === 3) {
+      if (!docs.tcOrAdmissionSlip || !docs.bankPassbook || !docs.feesSlip)
+        return 'Please select all three documents.';
+      const MAX = 5 * 1024 * 1024;
+      if (docs.tcOrAdmissionSlip.size > MAX) return 'TC / Admission Slip must be under 5 MB.';
+      if (docs.bankPassbook.size > MAX) return 'Bank Passbook must be under 5 MB.';
+      if (docs.feesSlip.size > MAX) return 'Fees Receipt must be under 5 MB.';
     }
     return '';
   };
@@ -60,9 +86,34 @@ export default function StudentApplication() {
     setStep(s => s + 1);
   };
 
+  // Called from step 3 when the application already exists — just upload docs directly
+  const handleDocUpload = async () => {
+    const err = validateStep();
+    if (err) {
+      setError(err);
+      return;
+    }
+    setSubmitting(true);
+    setError('');
+    try {
+      await uploadDocuments(docs.tcOrAdmissionSlip, docs.bankPassbook, docs.feesSlip);
+      toast.success('Documents uploaded successfully!');
+      navigate('/student/status');
+    } catch (err) {
+      setError(err.response?.data?.error || 'Upload failed. Please try again.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  // Called from step 4 — creates the application then uploads documents
   const handleSubmit = async () => {
     if (!form.declaration) {
       setError('You must agree to the declaration.');
+      return;
+    }
+    if (!docs.tcOrAdmissionSlip || !docs.bankPassbook || !docs.feesSlip) {
+      setError('Documents are missing. Please go back and re-select your files.');
       return;
     }
     setSubmitting(true);
@@ -79,17 +130,17 @@ export default function StudentApplication() {
           branchName: form.bankDetails.branchName,
         },
       };
-      await submitApplication(payload);
-      toast.success('Application submitted successfully! 🎉');
+      try {
+        await submitApplication(payload);
+      } catch (err) {
+        // 409 means app already exists — proceed to document upload
+        if (err.response?.status !== 409) throw err;
+      }
+      await uploadDocuments(docs.tcOrAdmissionSlip, docs.bankPassbook, docs.feesSlip);
+      toast.success('Application submitted successfully!');
       navigate('/student/status');
     } catch (err) {
-      const msg = err.response?.data?.error || 'Submission failed.';
-      if (err.response?.status === 409) {
-        toast.success('Application already exists. Redirecting…');
-        navigate('/student/status');
-      } else {
-        setError(msg);
-      }
+      setError(err.response?.data?.error || 'Submission failed.');
     } finally {
       setSubmitting(false);
     }
@@ -106,7 +157,7 @@ export default function StudentApplication() {
       </div>
     );
 
-  if (existing)
+  if (existing && docsUploaded)
     return (
       <div className="dash-layout">
         <Sidebar type="student" />
@@ -289,14 +340,104 @@ export default function StudentApplication() {
                     ← Back
                   </button>
                   <button className="btn btn-gold" onClick={handleNext}>
-                    Next: Declaration →
+                    Next: Documents →
                   </button>
                 </div>
               </div>
             )}
 
-            {/* Step 3 – Declaration */}
+            {/* Step 3 – Documents */}
             {step === 3 && (
+              <div>
+                <div className="card-title" style={{ fontSize: 17 }}>
+                  Upload Documents
+                </div>
+                <div className="card-sub">
+                  Upload clear photos or scans. All three documents are required. Max 5 MB each.
+                </div>
+                <div className="form-grid">
+                  <div className="full">
+                    <Field label="TC or PG Admission Slip *" dark>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="form-input dark"
+                        onChange={e =>
+                          setDocs(d => ({ ...d, tcOrAdmissionSlip: e.target.files[0] || null }))
+                        }
+                      />
+                    </Field>
+                  </div>
+                  <div className="full">
+                    <Field label="Bank Passbook Front Page *" dark>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="form-input dark"
+                        onChange={e =>
+                          setDocs(d => ({ ...d, bankPassbook: e.target.files[0] || null }))
+                        }
+                      />
+                    </Field>
+                  </div>
+                  <div className="full">
+                    <Field label="Fees Receipt / Fees Slip *" dark>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="form-input dark"
+                        onChange={e =>
+                          setDocs(d => ({ ...d, feesSlip: e.target.files[0] || null }))
+                        }
+                      />
+                    </Field>
+                  </div>
+                </div>
+                <div className="divider" />
+                <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
+                  {!existing && (
+                    <button
+                      className="btn btn-outline"
+                      style={{ color: 'var(--muted)', borderColor: 'var(--border)' }}
+                      onClick={() => {
+                        setStep(2);
+                        setError('');
+                      }}
+                    >
+                      ← Back
+                    </button>
+                  )}
+                  {existing ? (
+                    <button
+                      className="btn btn-gold"
+                      onClick={handleDocUpload}
+                      disabled={
+                        submitting ||
+                        !docs.tcOrAdmissionSlip ||
+                        !docs.bankPassbook ||
+                        !docs.feesSlip
+                      }
+                    >
+                      {submitting ? (
+                        <>
+                          <div className="spinner" style={{ borderTopColor: 'var(--navy)' }} />{' '}
+                          Uploading…
+                        </>
+                      ) : (
+                        'Upload Documents ✓'
+                      )}
+                    </button>
+                  ) : (
+                    <button className="btn btn-gold" onClick={handleNext}>
+                      Next: Declaration →
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Step 4 – Declaration */}
+            {step === 4 && (
               <div>
                 <div className="card-title" style={{ fontSize: 17 }}>
                   Declaration
@@ -408,7 +549,7 @@ export default function StudentApplication() {
                     className="btn btn-outline"
                     style={{ color: 'var(--muted)', borderColor: 'var(--border)' }}
                     onClick={() => {
-                      setStep(2);
+                      setStep(3);
                       setError('');
                     }}
                   >

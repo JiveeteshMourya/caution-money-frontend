@@ -61,7 +61,13 @@ Step 1: Register karo
   → /student/login pe jaao → form bharo → account ban gaya → done
 
 Step 2: Application Submit karo
-  → Apni details + bank account number daalo → Submit maaro
+  → Apni details + bank account number daalo
+  → Teen documents bhi upload karne padte hain: TC ya PG Admission Slip,
+    Bank Passbook ka front page, aur Fees Receipt
+    (image files only, max 5 MB — screenshot mat bhejo, clearly dikhna chahiye)
+  → Declaration padhke "haan sab sach hai" tick karo → Submit maaro
+  → Ek button press pe application bhi banti hai, documents bhi upload —
+    college jaisa chakkar nahi, ek hi baar mein
   → Ab baksh do khud ko, baaki system karega
 
 Step 3: Departments mein chakkar

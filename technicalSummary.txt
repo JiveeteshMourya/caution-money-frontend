@@ -216,8 +216,25 @@ API ENDPOINTS — Backend Se Kya Maanga Jaata Hai
            axios khud sahi multipart boundary set karta hai tab)
         → Response mein: app.noDuesMode = 'offline', app.noDuesImageId set
 
-  GET   /api/image/:noDuesImageId         (no auth needed)
-        → Uploaded form ki image seedha serve hoti hai
+  PATCH /application/my/documents         uploadDocuments(tc, passbook, fees)
+        body: FormData {
+          tcOrAdmissionSlip: File,   ← TC ya PG Admission Slip
+          bankPassbook:      File,   ← Passbook front page
+          feesSlip:          File,   ← Fees receipt
+        }
+        → Teeno files required — ek bhi missing? 400 aayega.
+        → Image only, max 5 MB each — enforce client-side bhi, server-side bhi
+        → Application exist karni chahiye pehle — 404 aayega warna
+          (isliye ye call hamesha submitApplication ke BAAD hoti hai)
+        → Wahi Content-Type: undefined jugaad — same pattern, teen files
+        → Re-upload bhi ho sakta hai — endpoint idempotent hai
+        → Response mein: teenonImageId — save kar lo agar chahiye
+        → GET /api/application/my mein bhi milenge:
+          tcOrAdmissionSlipImageId, bankPassbookImageId, feesSlipImageId
+          (null matlab docs abhi tak nahi aaye — ye check karo reload pe)
+
+  GET   /api/image/:imageId               (no auth needed)
+        → Koi bhi uploaded image serve hoti hai — noDues wali bhi, docs wali bhi
         → img src ya anchor href mein directly use karo — token lagane ki
           zaroorat nahi, public endpoint hai yeh
 

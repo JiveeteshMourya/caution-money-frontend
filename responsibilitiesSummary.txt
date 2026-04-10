@@ -38,12 +38,18 @@ Kya kiya usne:
       * authService.js — login, register, adminLogin, getMe
       * applicationService.js — getMyApplication, submitApplication,
         getAllApplications, getApplicationById, updateClearance,
-        processRefund, getDashboardStats, submitOfflineNoDues
+        processRefund, getDashboardStats, submitOfflineNoDues,
+        uploadDocuments
         (basically poori app ki backbone, credit dena chahiye tha)
         submitOfflineNoDues: multipart/form-data wala PATCH — file lega,
         FormData mein daalega, noDuesImage ke naam se bhejega. JSON nahi,
         multipart hai — isliye Content-Type: undefined pass kiya hai
         (axios khud sahi boundary set karta hai tab)
+        uploadDocuments: teen documents ek saath bhejna ka PATCH —
+        tcOrAdmissionSlip, bankPassbook, feesSlip — teeno FormData mein
+        append karo, ek hi multipart request mein server pe thoos do.
+        Wahi Content-Type: undefined jugaad, wahi axios boundary magic.
+        (Ek pattern seekha, teen files pe apply kiya — samjhdaar banda hai)
   - Router likha (AppRoutes.jsx) — kaun sa route kahan jaata hai, role check,
     guards lagaye, sab kuch. GPS tha poori app ka.
   - Constants define ki (config/constants.js):
@@ -146,17 +152,26 @@ Vibe:
   - Status page itna acha banaya ki anxiety kam ho jaati hai thodi
 
 Kya kiya usne:
-  - StudentApplication.jsx — 4 step ka mega form:
+  - StudentApplication.jsx — 4 step ka mega form (ab sach mein 4, properly):
       * Step 1 (Personal Info): naam, enrollment, year, department pehle se
         filled hain (Sulabh ka data use hua), edit bhi kar sakte ho
       * Step 2 (Bank Details): account number, IFSC, bank naam — sab validate
         hota hai, galat IFSC dalo toh bata dega
         (SBI wale dhyan se bharna, 11 digit hota hai)
-      * Step 3 (Declaration): checkbox tick karo ki "haan bhai sab sach hai"
-        — digital signature basically, jugaad version
-      * Step 4 (Submit): poora review karo, account number masked dikhega
-        (****1234 — security conscious hai ye app)
-      * Double submission? Nahi hoga. Already applied hai? Redirect kar dega.
+      * Step 3 (Documents): teen documents upload karo — TC ya PG Admission
+        Slip, Bank Passbook ka front page, aur Fees Receipt. Image only,
+        max 5 MB each. Files yahan select hoti hain, state mein reh jaati
+        hain, actual upload baad mein hota hai declaration ke saath.
+        Smart detect bhi hai: already application hai but docs nahi? Seedha
+        yahan bhej dega, "Upload Documents ✓" button se PATCH ho jaata hai.
+        (Jugaad, lekin elegant jugaad — fark hota hai)
+      * Step 4 (Declaration): checkbox tick karo ki "haan bhai sab sach hai"
+        — digital signature basically. "Submit Application ✓" dabao toh ek
+        saath do kaam: pehle POST se application banti hai, phir turant PATCH
+        se teeno docs upload. Ek button, do API calls, ek toast, done.
+        (college waale 3 mahine lete the, ye app 2 API calls mein khatam)
+      * Double submission? Nahi hoga. Already applied + docs uploaded? Alert.
+        Applied but docs missing? Step 3 pe seedha. Koi chakkar nahi.
         (ek baar kafi hai, college ko bhi pata hai)
   - StudentStatus.jsx — progress tracker, anxiety ka ilaaj:
       * 6 stages ka visual progress:
