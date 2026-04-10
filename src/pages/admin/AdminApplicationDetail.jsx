@@ -199,33 +199,8 @@ export default function AdminApplicationDetail() {
               <div className="card-title" style={{ fontSize: 16, margin: 0 }}>
                 Department Clearances
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                {app.noDuesMode === 'offline' && app.noDuesImageId && (
-                  <a
-                    href={`${backendUrl}/image/${app.noDuesImageId}`}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    <button
-                      style={{
-                        background: '#faf5ff',
-                        border: '1px solid #e9d5ff',
-                        color: '#7c3aed',
-                        borderRadius: 7,
-                        padding: '5px 12px',
-                        fontSize: 12,
-                        cursor: 'pointer',
-                        fontFamily: 'DM Sans',
-                        fontWeight: 600,
-                      }}
-                    >
-                      📄 View No-Dues Form
-                    </button>
-                  </a>
-                )}
-                <div style={{ fontSize: 12, color: 'var(--muted)' }}>
-                  Click on a clearance to update (if you have permission)
-                </div>
+              <div style={{ fontSize: 12, color: 'var(--muted)' }}>
+                Click on a clearance to update (if you have permission)
               </div>
             </div>
             <div className="clearance-grid">
@@ -259,6 +234,95 @@ export default function AdminApplicationDetail() {
                   </div>
                 );
               })}
+            </div>
+          </div>
+
+          {/* Uploaded Documents */}
+          <div className="card" style={{ marginBottom: 16 }}>
+            <div className="card-title" style={{ fontSize: 16, marginBottom: 16 }}>
+              Uploaded Documents
+            </div>
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
+                gap: 14,
+              }}
+            >
+              {[
+                { label: 'TC / Admission Slip', id: app.tcOrAdmissionSlipImageId },
+                { label: 'Bank Passbook', id: app.bankPassbookImageId },
+                { label: 'Fees Slip', id: app.feesSlipImageId },
+                { label: 'No-Dues Form', id: app.noDuesImageId },
+              ].map(({ label, id }) => (
+                <div
+                  key={label}
+                  style={{
+                    border: '1px solid var(--border)',
+                    borderRadius: 10,
+                    overflow: 'hidden',
+                    background: 'var(--bg)',
+                  }}
+                >
+                  {id ? (
+                    <>
+                      <a href={`${backendUrl}/image/${id}`} target="_blank" rel="noreferrer">
+                        <img
+                          src={`${backendUrl}/image/${id}`}
+                          alt={label}
+                          style={{
+                            width: '100%',
+                            height: 130,
+                            objectFit: 'cover',
+                            display: 'block',
+                          }}
+                        />
+                      </a>
+                      <div
+                        style={{
+                          padding: '8px 10px',
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                        }}
+                      >
+                        <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--navy)' }}>
+                          {label}
+                        </span>
+                        <a
+                          href={`${backendUrl}/image/${id}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          style={{
+                            fontSize: 11,
+                            color: 'var(--primary)',
+                            textDecoration: 'none',
+                            fontWeight: 600,
+                          }}
+                        >
+                          🔍 View
+                        </a>
+                      </div>
+                    </>
+                  ) : (
+                    <div
+                      style={{
+                        height: 160,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: 6,
+                        color: 'var(--muted)',
+                      }}
+                    >
+                      <span style={{ fontSize: 28 }}>📄</span>
+                      <span style={{ fontSize: 12, fontWeight: 600 }}>{label}</span>
+                      <span style={{ fontSize: 11 }}>Not uploaded</span>
+                    </div>
+                  )}
+                </div>
+              ))}
             </div>
           </div>
 

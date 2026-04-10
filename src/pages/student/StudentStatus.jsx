@@ -4,7 +4,6 @@ import toast from 'react-hot-toast';
 import { Sidebar, Topbar } from '@/components/common/Sidebar';
 import { ClearanceCard, Alert, Spinner, EmptyState, Timeline, InfoRow } from '@/components/common';
 import { formatDate, formatDateTime, maskAccount } from '@/utils/formatters';
-import { statusLabel } from '@/utils/mappers';
 import { useMyApplication } from '@/hooks/useMyApplication';
 import { APPLICATION_STATUS_STEPS, REFUND_AMOUNT_DISPLAY, backendUrl } from '@/config/constants';
 import { submitOfflineNoDues } from '@/services/applicationService';
@@ -269,6 +268,95 @@ export default function StudentStatus() {
                   </button>
                 </div>
               )}
+
+              {/* Uploaded Documents */}
+              <div className="card" style={{ marginBottom: 20 }}>
+                <div className="card-title" style={{ fontSize: 17, marginBottom: 16 }}>
+                  My Uploaded Documents
+                </div>
+                <div
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
+                    gap: 14,
+                  }}
+                >
+                  {[
+                    { label: 'TC / Admission Slip', id: app.tcOrAdmissionSlipImageId },
+                    { label: 'Bank Passbook', id: app.bankPassbookImageId },
+                    { label: 'Fees Slip', id: app.feesSlipImageId },
+                    { label: 'No-Dues Form', id: app.noDuesImageId },
+                  ].map(({ label, id }) => (
+                    <div
+                      key={label}
+                      style={{
+                        border: '1px solid var(--border)',
+                        borderRadius: 10,
+                        overflow: 'hidden',
+                        background: 'var(--bg)',
+                      }}
+                    >
+                      {id ? (
+                        <>
+                          <a href={`${backendUrl}/image/${id}`} target="_blank" rel="noreferrer">
+                            <img
+                              src={`${backendUrl}/image/${id}`}
+                              alt={label}
+                              style={{
+                                width: '100%',
+                                height: 130,
+                                objectFit: 'cover',
+                                display: 'block',
+                              }}
+                            />
+                          </a>
+                          <div
+                            style={{
+                              padding: '8px 10px',
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                              alignItems: 'center',
+                            }}
+                          >
+                            <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--navy)' }}>
+                              {label}
+                            </span>
+                            <a
+                              href={`${backendUrl}/image/${id}`}
+                              target="_blank"
+                              rel="noreferrer"
+                              style={{
+                                fontSize: 11,
+                                color: 'var(--primary)',
+                                textDecoration: 'none',
+                                fontWeight: 600,
+                              }}
+                            >
+                              🔍 View
+                            </a>
+                          </div>
+                        </>
+                      ) : (
+                        <div
+                          style={{
+                            height: 160,
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: 6,
+                            color: 'var(--muted)',
+                          }}
+                        >
+                          <span style={{ fontSize: 28 }}>📄</span>
+                          <span style={{ fontSize: 12, fontWeight: 600 }}>{label}</span>
+                          <span style={{ fontSize: 11 }}>Not uploaded</span>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
 
               {/* Application Details */}
               <div
