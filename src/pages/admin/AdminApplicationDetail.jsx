@@ -270,6 +270,7 @@ export default function AdminApplicationDetail() {
                         <img
                           src={`${backendUrl}/image/${id}`}
                           alt={label}
+                          referrerPolicy="no-referrer"
                           style={{
                             width: '100%',
                             height: 130,
